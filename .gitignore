@@ -6,6 +6,9 @@
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+.gradle/
 
 # Visual Studio / Rider generated files
 .vs/
@@ -23,10 +26,27 @@
 *.mdb
 *.opendb
 *.VC.db
+*.tmp
+*.suo
 
 # Unity cache / crash output
 sysinfo.txt
 *.stackdump
+*.log
+mono_crash.*
+[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Unity build outputs
+*.apk
+*.aab
+*.unitypackage
+*.unitypackage.meta
+*.app
+crashlytics-build.properties
+
+# Unity test runner generated files
+InitTestScene*.unity*
+[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 
 # OS files
 .DS_Store
