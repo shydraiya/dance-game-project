@@ -12,7 +12,7 @@ namespace Mediapipe.Unity
 {
   public class PoseLandmarkerResultAnnotationController : AnnotationController<MultiPoseLandmarkListWithMaskAnnotation>
   {
-    [SerializeField] private bool _visualizeZ = false;
+    [SerializeField] private bool _visualizeZ = true;
     [SerializeField] private PoseLandmarkListAnnotation.BodyParts _bodyPartsMask = PoseLandmarkListAnnotation.BodyParts.All;
 
     private readonly object _currentTargetLock = new object();
