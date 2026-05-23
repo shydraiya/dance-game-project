@@ -256,6 +256,111 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &1198038038 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1692468126580653705, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
+  m_PrefabInstance: {fileID: 1893415553}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1198038039 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5392821630538825289, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
+  m_PrefabInstance: {fileID: 1893415553}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1198038040 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
+  m_PrefabInstance: {fileID: 1893415553}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1198038041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198038038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f3498d4b1f24e54aa0db9e02b6a61b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HumanoidPoseDriver
+  _targetAnimator: {fileID: 1198038039}
+  _poseRunner: {fileID: 1273174938}
+  _modelRoot: {fileID: 1198038040}
+  _driveRootPosition: 0
+  _driveTorso: 0
+  _driveHead: 0
+  _driveArms: 1
+  _driveLegs: 0
+  _rotationSmoothing: 18
+  _positionSmoothing: 12
+  _minimumVisibility: 0.35
+  _mirrorHorizontally: 1
+  _landmarkScale: {x: 1, y: -1, z: -1}
+  _rootPositionScale: {x: 1, y: 1, z: 1}
+  _rootPositionOffset: {x: 0, y: 0, z: 0}
+  _logMissingReferences: 1
+  _logStatus: 0
+  _hasPose: 0
+  _isCalibrated: 0
+  _receivedPoseFrameCount: 0
+  _appliedPoseFrameCount: 0
+  _drivenBoneCount: 0
+  _status: Not started
+--- !u!1 &1273174937
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1273174939}
+  - component: {fileID: 1273174938}
+  m_Layer: 0
+  m_Name: Solution
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1273174938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1273174937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70620c801523bd3daafb31ee271ecac9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Mediapipe.Unity.Sample::Mediapipe.Unity.Sample.PoseLandmarkDetection.PoseLandmarkerRunner
+  _bootstrapPrefab: {fileID: 0}
+  screen: {fileID: 0}
+  runningMode: 0
+  _poseLandmarkerResultAnnotationController: {fileID: 0}
+  _visibleBodyParts: -1
+  _drawFaceCircle: 1
+  _faceCircleColor: {r: 1, g: 1, b: 1, a: 1}
+  _faceCircleWidth: 0.35
+  _faceCirclePadding: 0
+  _faceCircleRadiusScale: 0.6
+  _faceCircleOffset: {x: 0, y: 0}
+--- !u!4 &1273174939
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1273174937}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -97}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1352945102
 GameObject:
   m_ObjectHideFlags: 0
@@ -617,7 +722,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1692468126580653705, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1198038041}
   m_SourcePrefab: {fileID: 100100000, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
 --- !u!1 &2100000000
 GameObject:
@@ -738,6 +846,7 @@ MonoBehaviour:
   _bootstrapPrefab: {fileID: 968918444066301895, guid: 1146a9de09159a948b683e94fb3d3c95, type: 3}
   _annotatableScreenPrefab: {fileID: 3259285889726014651, guid: 5713b959e3c77a58fb258133fc8e4aef, type: 3}
   _poseAnnotationPrefab: {fileID: 764270978808325597, guid: af6f87c1f072d207e99065e4712f000d, type: 3}
+  _poseRunner: {fileID: 1273174938}
   _visibleBodyParts: 126
   _visualizeZ: 0
   _leftLandmarkColor: {r: 0, g: 1, b: 0, a: 1}
@@ -907,3 +1016,4 @@ SceneRoots:
   - {fileID: 1893415553}
   - {fileID: 2100000001}
   - {fileID: 1404816332}
+  - {fileID: 1273174939}

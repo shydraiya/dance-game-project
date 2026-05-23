@@ -11,6 +11,7 @@ public class ModelTestPoseLandmarkerSampleSetup : MonoBehaviour
   [SerializeField] private GameObject _bootstrapPrefab;
   [SerializeField] private GameObject _annotatableScreenPrefab;
   [SerializeField] private GameObject _poseAnnotationPrefab;
+  [SerializeField] private PoseLandmarkerRunner _poseRunner;
 
   [Header("Pose Runner")]
   [SerializeField] private PoseLandmarkListAnnotation.BodyParts _visibleBodyParts = PoseLandmarkListAnnotation.BodyParts.All;
@@ -37,12 +38,14 @@ public class ModelTestPoseLandmarkerSampleSetup : MonoBehaviour
   private PoseLandmarkerResultAnnotationController _annotationController;
   private PoseLandmarkerRunner _runner;
 
+  public PoseLandmarkerRunner PoseRunner => _runner;
+
   private void Awake()
   {
     ConfigureCanvasForSampleAnnotations();
     var screen = InstantiateScreen();
     var annotationController = AddAnnotation(screen);
-    var runner = gameObject.AddComponent<PoseLandmarkerRunner>();
+    var runner = ResolvePoseRunner();
 
     SetField(runner, "_bootstrapPrefab", _bootstrapPrefab);
     SetField(runner, "screen", screen);
@@ -98,6 +101,24 @@ public class ModelTestPoseLandmarkerSampleSetup : MonoBehaviour
     var controller = annotationLayer.gameObject.AddComponent<PoseLandmarkerResultAnnotationController>();
     SetField(controller, "annotation", _annotation);
     return controller;
+  }
+
+  private PoseLandmarkerRunner ResolvePoseRunner()
+  {
+    if (_poseRunner != null)
+    {
+      return _poseRunner;
+    }
+
+    _poseRunner = FindAnyObjectByType<PoseLandmarkerRunner>();
+    if (_poseRunner != null)
+    {
+      return _poseRunner;
+    }
+
+    Debug.LogWarning($"{nameof(ModelTestPoseLandmarkerSampleSetup)} could not find a scene PoseLandmarkerRunner, so it created one on this GameObject. For the final setup, place a Solution object in the scene and assign its PoseLandmarkerRunner here.", this);
+    _poseRunner = gameObject.AddComponent<PoseLandmarkerRunner>();
+    return _poseRunner;
   }
 
   private void ApplyAnnotationOptions()
