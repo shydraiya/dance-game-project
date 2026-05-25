@@ -26,6 +26,7 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   [Header("MediaPipe Axis")]
   [SerializeField] private bool _mirrorHorizontally = true;
+  [SerializeField] private bool _swapLeftRightLandmarksWhenNotMirrored = true;
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
   [SerializeField] private Vector3 _rootPositionScale = new Vector3(1.0f, 1.0f, 1.0f);
   [SerializeField] private Vector3 _rootPositionOffset;
@@ -259,10 +260,10 @@ public class HumanoidPoseDriver : MonoBehaviour
     {
       for (var i = 0; i < LandmarkCount; i++)
       {
-        var landmark = landmarks[i];
+        var landmark = landmarks[GetSourceLandmarkIndex(i)];
         var x = _mirrorHorizontally ? -landmark.x : landmark.x;
         _pendingPose[i] = new Vector3(x * _landmarkScale.x, landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
-        _pendingVisibility[i] = landmarks[i].visibility ?? 1.0f;
+        _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
       _hasPendingPose = true;
@@ -276,7 +277,7 @@ public class HumanoidPoseDriver : MonoBehaviour
     {
       for (var i = 0; i < LandmarkCount; i++)
       {
-        var landmark = landmarks[i];
+        var landmark = landmarks[GetSourceLandmarkIndex(i)];
         var x = _mirrorHorizontally ? -(landmark.x - 0.5f) : landmark.x - 0.5f;
         _pendingPose[i] = new Vector3(x * _landmarkScale.x, (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
@@ -285,6 +286,51 @@ public class HumanoidPoseDriver : MonoBehaviour
       _hasPendingPose = true;
       _receivedPoseFrameCount++;
     }
+  }
+
+  private int GetSourceLandmarkIndex(int targetIndex)
+  {
+    if (_mirrorHorizontally || !_swapLeftRightLandmarksWhenNotMirrored)
+    {
+      return targetIndex;
+    }
+
+    return targetIndex switch
+    {
+      1 => 4,
+      2 => 5,
+      3 => 6,
+      4 => 1,
+      5 => 2,
+      6 => 3,
+      7 => 8,
+      8 => 7,
+      9 => 10,
+      10 => 9,
+      11 => 12,
+      12 => 11,
+      13 => 14,
+      14 => 13,
+      15 => 16,
+      16 => 15,
+      17 => 18,
+      18 => 17,
+      19 => 20,
+      20 => 19,
+      21 => 22,
+      22 => 21,
+      23 => 24,
+      24 => 23,
+      25 => 26,
+      26 => 25,
+      27 => 28,
+      28 => 27,
+      29 => 30,
+      30 => 29,
+      31 => 32,
+      32 => 31,
+      _ => targetIndex
+    };
   }
 
   private void ConsumePendingPose()
