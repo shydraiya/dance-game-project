@@ -5,12 +5,9 @@
 // https://opensource.org/licenses/MIT.
 
 using System.Collections;
-using System.Collections.Generic;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
 using UnityEngine;
 using UnityEngine.Rendering;
-
-using mptcc = Mediapipe.Tasks.Components.Containers;
 
 namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
 {
@@ -199,7 +196,6 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
 
     private void OnPoseLandmarkDetectionOutput(PoseLandmarkerResult result, Image image, long timestamp)
     {
-      PoseLandmarkFusionStore.Submit(PoseCameraSource.Webcam, result, timestamp);
       _poseLandmarkerResultAnnotationController.DrawLater(result);
       DisposeAllMasks(result);
       _isLiveStreamRequestPending = false;
@@ -219,90 +215,6 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
           mask.Dispose();
         }
       }
-    }
-  }
-
-  public enum PoseCameraSource
-  {
-    Webcam,
-    DroidCam,
-  }
-
-  public readonly struct PoseLandmarkFrame
-  {
-    public readonly Vector3[] landmarks;
-    public readonly float[] visibility;
-    public readonly long timestampMillisec;
-    public readonly bool isValid;
-
-    public PoseLandmarkFrame(Vector3[] landmarks, float[] visibility, long timestampMillisec)
-    {
-      this.landmarks = landmarks;
-      this.visibility = visibility;
-      this.timestampMillisec = timestampMillisec;
-      isValid = landmarks != null && landmarks.Length > 0;
-    }
-  }
-
-  public static class PoseLandmarkFusionStore
-  {
-    public const int LandmarkCount = 33;
-
-    private static readonly object Lock = new();
-    private static PoseLandmarkFrame webcamFrame;
-    private static PoseLandmarkFrame droidCamFrame;
-
-    public static void Submit(PoseCameraSource source, PoseLandmarkerResult result, long timestampMillisec)
-    {
-      if (result.poseLandmarks == null || result.poseLandmarks.Count == 0)
-      {
-        return;
-      }
-
-      Submit(source, result.poseLandmarks[0].landmarks, timestampMillisec);
-    }
-
-    private static void Submit(PoseCameraSource source, IReadOnlyList<mptcc.NormalizedLandmark> landmarks, long timestampMillisec)
-    {
-      if (landmarks == null || landmarks.Count < LandmarkCount)
-      {
-        return;
-      }
-
-      var points = new Vector3[LandmarkCount];
-      var visibility = new float[LandmarkCount];
-
-      for (var i = 0; i < LandmarkCount; i++)
-      {
-        var landmark = landmarks[i];
-        points[i] = new Vector3(landmark.x, landmark.y, landmark.z);
-        visibility[i] = landmark.visibility ?? landmark.presence ?? 1.0f;
-      }
-
-      var frame = new PoseLandmarkFrame(points, visibility, timestampMillisec);
-
-      lock (Lock)
-      {
-        if (source == PoseCameraSource.Webcam)
-        {
-          webcamFrame = frame;
-        }
-        else
-        {
-          droidCamFrame = frame;
-        }
-      }
-    }
-
-    public static bool TryGetFrames(out PoseLandmarkFrame webcam, out PoseLandmarkFrame droidCam)
-    {
-      lock (Lock)
-      {
-        webcam = webcamFrame;
-        droidCam = droidCamFrame;
-      }
-
-      return webcam.isValid && droidCam.isValid;
     }
   }
 }
