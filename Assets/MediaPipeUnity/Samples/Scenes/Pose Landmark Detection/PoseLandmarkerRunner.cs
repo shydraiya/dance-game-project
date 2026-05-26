@@ -5,6 +5,7 @@
 // https://opensource.org/licenses/MIT.
 
 using System.Collections;
+using System;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -26,6 +27,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     private volatile bool _isLiveStreamRequestPending;
 
     public readonly PoseLandmarkDetectionConfig config = new PoseLandmarkDetectionConfig();
+    public event Action<PoseLandmarkerResult> PoseLandmarksUpdated;
 
     public PoseLandmarkListAnnotation.BodyParts VisibleBodyParts
     {
@@ -168,6 +170,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             if (taskApi.TryDetect(image, imageProcessingOptions, ref result))
             {
               _poseLandmarkerResultAnnotationController.DrawNow(result);
+              PoseLandmarksUpdated?.Invoke(result);
             }
             else
             {
@@ -179,6 +182,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
             if (taskApi.TryDetectForVideo(image, GetCurrentTimestampMillisec(), imageProcessingOptions, ref result))
             {
               _poseLandmarkerResultAnnotationController.DrawNow(result);
+              PoseLandmarksUpdated?.Invoke(result);
             }
             else
             {
@@ -197,6 +201,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     private void OnPoseLandmarkDetectionOutput(PoseLandmarkerResult result, Image image, long timestamp)
     {
       _poseLandmarkerResultAnnotationController.DrawLater(result);
+      PoseLandmarksUpdated?.Invoke(result);
       DisposeAllMasks(result);
       _isLiveStreamRequestPending = false;
     }
