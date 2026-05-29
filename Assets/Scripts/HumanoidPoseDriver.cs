@@ -24,9 +24,9 @@ public class HumanoidPoseDriver : MonoBehaviour
   [SerializeField] private float _positionSmoothing = 12.0f;
   [SerializeField, Range(0, 1)] private float _minimumVisibility = 0.35f;
 
-  [Header("MediaPipe Axis")]
+  [Header("Landmark Mapping")]
+  [Tooltip("Swap incoming MediaPipe left/right labels without flipping the pose coordinates. Enable this when the solution labels your right side as left.")]
   [SerializeField] private bool _mirrorHorizontally = true;
-  [SerializeField] private bool _swapLeftRightLandmarksWhenNotMirrored = true;
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
   [SerializeField] private Vector3 _rootPositionScale = new Vector3(1.0f, 1.0f, 1.0f);
   [SerializeField] private Vector3 _rootPositionOffset;
@@ -52,6 +52,8 @@ public class HumanoidPoseDriver : MonoBehaviour
   private float _nextStatusLogTime;
   private Vector3 _calibratedPelvisCenter;
   private Vector3 _calibratedRootLocalPosition;
+  private Quaternion _calibratedRootRotation = Quaternion.identity;
+  private Quaternion _calibratedRootLocalRotation = Quaternion.identity;
   private OrientationCalibration _hipsOrientation;
   private OrientationCalibration _chestOrientation;
   private OrientationCalibration _headOrientation;
@@ -261,8 +263,7 @@ public class HumanoidPoseDriver : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        var x = _mirrorHorizontally ? -landmark.x : landmark.x;
-        _pendingPose[i] = new Vector3(x * _landmarkScale.x, landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
+        _pendingPose[i] = new Vector3(landmark.x * _landmarkScale.x, landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
@@ -278,8 +279,7 @@ public class HumanoidPoseDriver : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        var x = _mirrorHorizontally ? -(landmark.x - 0.5f) : landmark.x - 0.5f;
-        _pendingPose[i] = new Vector3(x * _landmarkScale.x, (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
+        _pendingPose[i] = new Vector3((landmark.x - 0.5f) * _landmarkScale.x, (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
@@ -290,7 +290,7 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private int GetSourceLandmarkIndex(int targetIndex)
   {
-    if (_mirrorHorizontally || !_swapLeftRightLandmarksWhenNotMirrored)
+    if (!_mirrorHorizontally)
     {
       return targetIndex;
     }
@@ -449,6 +449,8 @@ public class HumanoidPoseDriver : MonoBehaviour
 
     _calibratedPelvisCenter = GetPelvisCenter(_latestPose);
     _calibratedRootLocalPosition = _modelRoot.localPosition;
+    _calibratedRootRotation = _modelRoot.rotation;
+    _calibratedRootLocalRotation = _modelRoot.localRotation;
 
     _hipsOrientation.RestPoseOrientation = GetTorsoOrientation(_latestPose);
     _chestOrientation.RestPoseOrientation = _hipsOrientation.RestPoseOrientation;
@@ -465,7 +467,7 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
 
     var pelvisDelta = GetPelvisCenter(_latestPose) - _calibratedPelvisCenter;
-    var targetLocalPosition = _calibratedRootLocalPosition + Vector3.Scale(pelvisDelta, _rootPositionScale) + _rootPositionOffset;
+    var targetLocalPosition = _calibratedRootLocalPosition + (_calibratedRootLocalRotation * Vector3.Scale(pelvisDelta, _rootPositionScale)) + _rootPositionOffset;
     var t = 1.0f - Mathf.Exp(-_positionSmoothing * Time.deltaTime);
     _modelRoot.localPosition = Vector3.Lerp(_modelRoot.localPosition, targetLocalPosition, t);
   }
@@ -495,8 +497,8 @@ public class HumanoidPoseDriver : MonoBehaviour
       return;
     }
 
-    var targetWorldOrientation = GetModelSpaceRotation(targetPoseOrientation);
-    var targetRotation = targetWorldOrientation * Quaternion.Inverse(calibration.RestPoseOrientation) * calibration.RestBoneRotation;
+    var targetWorldDelta = GetModelSpaceRotationDelta(targetPoseOrientation, calibration.RestPoseOrientation);
+    var targetRotation = targetWorldDelta * calibration.RestBoneRotation;
     var t = 1.0f - Mathf.Exp(-_rotationSmoothing * Time.deltaTime);
     calibration.Transform.rotation = Quaternion.Slerp(calibration.Transform.rotation, targetRotation, t);
   }
@@ -556,12 +558,13 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private Vector3 GetModelSpaceDirection(Vector3 landmarkDirection)
   {
-    return _modelRoot != null ? _modelRoot.TransformDirection(landmarkDirection).normalized : landmarkDirection.normalized;
+    return _modelRoot != null ? (_calibratedRootRotation * landmarkDirection).normalized : landmarkDirection.normalized;
   }
 
-  private Quaternion GetModelSpaceRotation(Quaternion landmarkRotation)
+  private Quaternion GetModelSpaceRotationDelta(Quaternion currentPoseRotation, Quaternion restPoseRotation)
   {
-    return _modelRoot != null ? _modelRoot.rotation * landmarkRotation : landmarkRotation;
+    var poseDelta = currentPoseRotation * Quaternion.Inverse(restPoseRotation);
+    return _modelRoot != null ? _calibratedRootRotation * poseDelta * Quaternion.Inverse(_calibratedRootRotation) : poseDelta;
   }
 
   private Vector3 GetPelvisCenter(Vector3[] pose)
