@@ -1,5 +1,6 @@
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ModelTestDualSceneController : MonoBehaviour
 {
@@ -14,9 +15,15 @@ public class ModelTestDualSceneController : MonoBehaviour
   [SerializeField] private string _rightDeviceNameContains = "DroidCam";
   [SerializeField] private Vector3 _rightAvatarOffset = new(4.0f, 0.0f, 0.0f);
 
+  [Header("Merged Scene")]
+  [SerializeField] private Vector3 _mergedAvatarOffset = new(8.0f, 0.0f, 0.0f);
+  [SerializeField] private string _mergedLabelText = "merged";
+
   private WebCamPoseLandmarkerRunner _rightRunner;
   private HumanoidPoseDriver _rightPoseDriver;
   private Camera _rightModelCamera;
+  private MergedHumanoidPoseDriver _mergedPoseDriver;
+  private Camera _mergedModelCamera;
   private RectTransform _rightRunnerPanel;
 
   private void Start()
@@ -24,8 +31,9 @@ public class ModelTestDualSceneController : MonoBehaviour
     ResolveReferences();
     DisableLegacySwapController();
     ConfigureLeftFullBody();
-    ConfigureFourColumnLayout();
+    ConfigureFiveColumnLayout();
     ConfigureRightSide();
+    ConfigureMergedSide();
   }
 
   private void ResolveReferences()
@@ -77,11 +85,11 @@ public class ModelTestDualSceneController : MonoBehaviour
     _leftPoseDriver.Recalibrate();
   }
 
-  private void ConfigureFourColumnLayout()
+  private void ConfigureFiveColumnLayout()
   {
     if (_leftSetup != null && _leftSetup.WebCamPanel != null)
     {
-      SetPanelRect(_leftSetup.WebCamPanel, 0.0f, 0.25f);
+      SetPanelRect(_leftSetup.WebCamPanel, 0.0f, 0.2f);
     }
 
     if (_leftWebCamCamera != null)
@@ -92,7 +100,7 @@ public class ModelTestDualSceneController : MonoBehaviour
 
     if (_leftModelCamera != null)
     {
-      _leftModelCamera.rect = new Rect(0.25f, 0.0f, 0.25f, 1.0f);
+      _leftModelCamera.rect = new Rect(0.2f, 0.0f, 0.2f, 1.0f);
       _leftModelCamera.depth = 0.0f;
     }
   }
@@ -130,9 +138,42 @@ public class ModelTestDualSceneController : MonoBehaviour
     _rightModelCamera = rightCameraObject.AddComponent<Camera>();
     _rightModelCamera.CopyFrom(_leftModelCamera);
     _rightModelCamera.transform.SetPositionAndRotation(_leftModelCamera.transform.position + _rightAvatarOffset, _leftModelCamera.transform.rotation);
-    _rightModelCamera.rect = new Rect(0.75f, 0.0f, 0.25f, 1.0f);
+    _rightModelCamera.rect = new Rect(0.6f, 0.0f, 0.2f, 1.0f);
     _rightModelCamera.depth = 0.0f;
     _rightModelCamera.targetTexture = null;
+  }
+
+  private void ConfigureMergedSide()
+  {
+    if (_leftSetup == null || _leftAvatarRoot == null || _leftModelCamera == null || _rightRunner == null)
+    {
+      Debug.LogWarning($"{nameof(ModelTestDualSceneController)} could not configure the merged side because a source reference is missing.", this);
+      return;
+    }
+
+    var mergedAvatar = Instantiate(_leftAvatarRoot.gameObject, _leftAvatarRoot.position + _mergedAvatarOffset, _leftAvatarRoot.rotation);
+    mergedAvatar.name = $"{_leftAvatarRoot.name} Merged";
+
+    var copiedPoseDriver = mergedAvatar.GetComponentInChildren<HumanoidPoseDriver>();
+    if (copiedPoseDriver != null)
+    {
+      copiedPoseDriver.enabled = false;
+      Destroy(copiedPoseDriver);
+    }
+
+    var targetAnimator = mergedAvatar.GetComponentInChildren<Animator>();
+    _mergedPoseDriver = mergedAvatar.AddComponent<MergedHumanoidPoseDriver>();
+    _mergedPoseDriver.Configure(targetAnimator, targetAnimator == null ? mergedAvatar.transform : targetAnimator.transform, _leftSetup.PoseRunner, _rightRunner);
+
+    var mergedCameraObject = new GameObject("Merged modelCamera");
+    _mergedModelCamera = mergedCameraObject.AddComponent<Camera>();
+    _mergedModelCamera.CopyFrom(_leftModelCamera);
+    _mergedModelCamera.transform.SetPositionAndRotation(_leftModelCamera.transform.position + _mergedAvatarOffset, _leftModelCamera.transform.rotation);
+    _mergedModelCamera.rect = new Rect(0.8f, 0.0f, 0.2f, 1.0f);
+    _mergedModelCamera.depth = 0.0f;
+    _mergedModelCamera.targetTexture = null;
+
+    CreateMergedLabel(_leftSetup.WebCamPanel.parent as RectTransform);
   }
 
   private RectTransform CreateRightPanel(RectTransform canvasRoot)
@@ -140,8 +181,34 @@ public class ModelTestDualSceneController : MonoBehaviour
     var rightPanelObject = new GameObject("DroidCam Preview Panel", typeof(RectTransform));
     rightPanelObject.transform.SetParent(canvasRoot, false);
     var rightPanel = (RectTransform)rightPanelObject.transform;
-    SetPanelRect(rightPanel, 0.5f, 0.75f);
+    SetPanelRect(rightPanel, 0.4f, 0.6f);
     return rightPanel;
+  }
+
+  private void CreateMergedLabel(RectTransform canvasRoot)
+  {
+    if (canvasRoot == null)
+    {
+      return;
+    }
+
+    var labelObject = new GameObject("Merged Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+    labelObject.transform.SetParent(canvasRoot, false);
+
+    var rectTransform = (RectTransform)labelObject.transform;
+    rectTransform.anchorMin = new Vector2(0.8f, 1.0f);
+    rectTransform.anchorMax = new Vector2(1.0f, 1.0f);
+    rectTransform.pivot = new Vector2(0.5f, 1.0f);
+    rectTransform.anchoredPosition = new Vector2(0.0f, -16.0f);
+    rectTransform.sizeDelta = new Vector2(0.0f, 48.0f);
+
+    var label = labelObject.GetComponent<Text>();
+    label.text = _mergedLabelText;
+    label.alignment = TextAnchor.MiddleCenter;
+    label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+    label.fontSize = 28;
+    label.color = Color.white;
+    label.raycastTarget = false;
   }
 
   private static void SetPanelRect(RectTransform panel, float minX, float maxX)
