@@ -287,10 +287,10 @@ MonoBehaviour:
   _poseRunner: {fileID: 1273174938}
   _modelRoot: {fileID: 1198038040}
   _driveRootPosition: 0
-  _driveTorso: 0
-  _driveHead: 0
+  _driveTorso: 1
+  _driveHead: 1
   _driveArms: 1
-  _driveLegs: 0
+  _driveLegs: 1
   _rotationSmoothing: 18
   _positionSmoothing: 12
   _minimumVisibility: 0.35
@@ -498,6 +498,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1404816332}
   - component: {fileID: 1404816331}
+  - component: {fileID: 1404816333}
   m_Layer: 0
   m_Name: DualCameraViewSwapController
   m_TagString: Untagged
@@ -539,6 +540,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1404816333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1404816330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d89f510466a4dfebd134b10d971f44b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _leftSetup: {fileID: 2100000006}
+  _leftPoseDriver: {fileID: 1198038041}
+  _leftModelCamera: {fileID: 1538356704}
+  _leftWebCamCamera: {fileID: 97799308}
+  _leftAvatarRoot: {fileID: 1198038040}
+  _rightDeviceNameContains: DroidCam
+  _rightAvatarOffset: {x: 4, y: 0, z: 0}
+  _avatarPreviewSize: {x: 240, y: 360}
+  _avatarPreviewMargin: {x: 18, y: 18}
+  _avatarPreviewTextureWidth: 720
+  _avatarPreviewTextureHeight: 1080
 --- !u!1 &1538356701
 GameObject:
   m_ObjectHideFlags: 0

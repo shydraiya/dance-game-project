@@ -39,6 +39,10 @@ public class ModelTestPoseLandmarkerSampleSetup : MonoBehaviour
   private PoseLandmarkerRunner _runner;
 
   public PoseLandmarkerRunner PoseRunner => _runner;
+  public RectTransform WebCamPanel => _webCamPanel;
+  public GameObject BootstrapPrefab => _bootstrapPrefab;
+  public GameObject AnnotatableScreenPrefab => _annotatableScreenPrefab;
+  public GameObject PoseAnnotationPrefab => _poseAnnotationPrefab;
 
   private void Awake()
   {
