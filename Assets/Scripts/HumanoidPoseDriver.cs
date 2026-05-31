@@ -223,6 +223,15 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
   }
 
+  public void ConfigureDriving(bool driveRootPosition, bool driveTorso, bool driveHead, bool driveArms, bool driveLegs)
+  {
+    _driveRootPosition = driveRootPosition;
+    _driveTorso = driveTorso;
+    _driveHead = driveHead;
+    _driveArms = driveArms;
+    _driveLegs = driveLegs;
+  }
+
   public void Recalibrate()
   {
     _isCalibrated = false;
@@ -232,6 +241,11 @@ public class HumanoidPoseDriver : MonoBehaviour
     {
       CalibrateFromCurrentPose();
     }
+  }
+
+  public void ApplyPoseLandmarkerResult(PoseLandmarkerResult result)
+  {
+    OnPoseLandmarksUpdated(result);
   }
 
   private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
