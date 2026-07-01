@@ -1,7 +1,6 @@
-총 2개의 코드 파일이 고쳐졌음
+Scene Pattern Test에서 작업함
 
-PointAnnotation.cs
-여기 보면 <<Fixed Here>>라고 적혀있는 부분이 있는데, 요게 다 수정된 부분
+GameManager랑 Canvas가 추가됨
 
-PoseLandmarkerResultAnnotationController.cs
-여기서 [SerializeField] private bool _visualizeZ = true; 요거 false에서 true로 바꿔뒀음
+GameManager = 말 그대로 게임을 관리하는 메인 오브젝트
+Canvs = 여기 안에 HUD 관련 데이터를 싹 넣어둠. 나중에 일시정지 레이아웃도 여기다 넣을 예정임
