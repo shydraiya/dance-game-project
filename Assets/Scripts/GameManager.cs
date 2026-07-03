@@ -1,5 +1,8 @@
 using System.Collections;
+using UnityEngine.InputSystem;
 using UnityEngine;
+using Unity.VectorGraphics;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,6 +13,9 @@ public class GameManager : MonoBehaviour
     public float maxGameTime; //최대 게임 진행 시간 (곡이 2분30초면 150.0f)
     [Header("# Game Info")]
     public int score;         //점수
+    [Header("# Pause Object")]
+    public GameObject pausePanel;
+
 
     //Awake 함수
     //게임이 1초에 60프레임씩 진행되도록 고정함 (요거 안하면 30fps 나옴)
@@ -28,6 +34,7 @@ public class GameManager : MonoBehaviour
     public void GameStop()
     {
         gamePlay = false;
+        pausePanel.SetActive(true);
         Time.timeScale = 0;
     }
 
@@ -37,14 +44,22 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(GameResumeRoutine());
     }
-
+    //이어하기 함수에서 실행하는 seq
     IEnumerator GameResumeRoutine()
     {
-        yield return new WaitForSeconds(1.0f);
-        yield return new WaitForSeconds(1.0f);
-        yield return new WaitForSeconds(1.0f);
+        pausePanel.SetActive(false);
+        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(1f);
         gamePlay = true;
         Time.timeScale = 1;
+    }
+
+    //게임 다시하기 함수
+    public void GameRetry()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     //시간에 따라 타이머 업데이트
@@ -61,6 +76,11 @@ public class GameManager : MonoBehaviour
             gameTime = maxGameTime;
             GameVictory();
         }
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            GameStop();
+        }
     }
 
     //게임 승리 함수
@@ -68,7 +88,7 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(GameVictoryRoutine());
     }
-
+    //승리 함수에서 실행하는 seq
     IEnumerator GameVictoryRoutine()
     {
         gamePlay = false;
