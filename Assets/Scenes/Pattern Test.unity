@@ -2418,6 +2418,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1944180972}
   m_CullTransparentMesh: 1
+--- !u!1 &2045359111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2045359113}
+  - component: {fileID: 2045359112}
+  m_Layer: 0
+  m_Name: Reader
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2045359112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045359111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06bd8937c2d6234cafac52c71b28571, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PoseNoteReader
+  _patternLoader: {fileID: 0}
+  _poseRunner: {fileID: 0}
+  _webCamPoseRunner: {fileID: 0}
+  _autoFindSources: 1
+  _forwardSpare: 10
+  _backwardSpare: 10
+  _frameTime: 0.016666668
+  _minimumVisibility: 0.35
+  _perfectAngle: 15
+  _goodAngle: 30
+  _badAngle: 45
+  _mirrorHorizontally: 1
+  _logJudgement: 0
+  _lastJudge: 0
+  _lastScore: 0
+  _lastAverageAngle: 0
+  _lastMatchedNoteTime: -1
+  _lastComparedParts: 0
+--- !u!4 &2045359113
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045359111}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2100000000
 GameObject:
   m_ObjectHideFlags: 0
@@ -2713,3 +2775,4 @@ SceneRoots:
   - {fileID: 367740263}
   - {fileID: 490672612}
   - {fileID: 1575863252}
+  - {fileID: 2045359113}
