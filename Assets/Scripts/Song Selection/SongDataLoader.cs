@@ -62,6 +62,8 @@ public static class SongDataLoader
                 author     = columns[2],
                 time       = time,
                 difficulty = difficulty,
+                musicPath  = columns.Count > 5 ? columns[5] : "", // Path가 비워져 있으면 그냥 둠
+                patternPath = columns.Count > 6 ? columns[6] : "",
             };
 
             //그렇게 만들어진 song을 songs 배열에 추가함

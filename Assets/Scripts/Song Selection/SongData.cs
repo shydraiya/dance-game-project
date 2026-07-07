@@ -13,4 +13,7 @@ public class SongData
     public float time;
     public int difficulty;
 
+    public string musicPath;
+    public string patternPath;
+
 }
