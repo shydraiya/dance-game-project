@@ -28,7 +28,7 @@ public class PatternLoader : MonoBehaviour
         if (Frames.Count > 0)
         {
             Debug.Log($"First frame time: {Frames[0].time}");
-            Debug.Log($"Neck angle: {Frames[0].GetAngle("neck")}");
+            Debug.Log($"Neck angle: {Frames[0].GetAngle(PatternJoint.Neck)}");
         }
     }
 
@@ -78,16 +78,24 @@ public class PatternLoader : MonoBehaviour
             PatternFrame frame = new PatternFrame();
 
             frame.time = ParseFloat(cells[timeIndex]);
+            int jointId = 0;
 
             for (int j = 0; j < headers.Count; j++)
             {
                 if (j == timeIndex)
                     continue;
 
-                string key = headers[j];
                 Vector3 angle = ParseVector3(cells[j]);
+                if (jointId < PatternFrame.JointCount)
+                {
+                    frame.angles[jointId] = angle;
+                }
+                else
+                {
+                    Debug.LogWarning($"Extra pattern angle column at line {i + 1}, column {j + 1}. Skipped.");
+                }
 
-                frame.angles[key] = angle;
+                jointId++;
             }
 
             result.Add(frame);
