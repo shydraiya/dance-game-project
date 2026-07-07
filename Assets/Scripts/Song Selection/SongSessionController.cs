@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class SongSessionController : MonoBehaviour
 {
+
+    // main menu에서 선택한 곡의 정보를 게임 씬으로 넘겨줌
     public static SongSessionController Instance { get; private set; }
 
     public SongData SelectedSong { get; private set; }
