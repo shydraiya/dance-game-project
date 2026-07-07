@@ -287,15 +287,14 @@ MonoBehaviour:
   _poseRunner: {fileID: 1273174938}
   _modelRoot: {fileID: 1198038040}
   _driveRootPosition: 0
-  _driveTorso: 0
+  _driveTorso: 1
   _driveHead: 1
   _driveArms: 1
   _driveLegs: 1
   _rotationSmoothing: 18
   _positionSmoothing: 12
   _minimumVisibility: 0.35
-  _mirrorHorizontally: 0
-  _invertXCoordinate: 1
+  _mirrorHorizontally: 1
   _landmarkScale: {x: 1, y: -1, z: -1}
   _rootPositionScale: {x: 1, y: 1, z: 1}
   _rootPositionOffset: {x: 0, y: 0, z: 0}
@@ -694,7 +693,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalRotation.x
@@ -702,11 +701,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 1
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -714,7 +713,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2033105197973300275, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
