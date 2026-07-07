@@ -15,6 +15,7 @@ public class SongSelectManager : MonoBehaviour
     [Tooltip("마지막 곡에서 아래를 누르면 첫 곡으로 돌아갈지 여부")]
     [SerializeField] private bool loopSongList = true;
 
+    [Tooltip("곡이 선택되면 이동할 씬의 이름")]
     [Header("Scene Flow")]
     [SerializeField] private string gameSceneName = "Game";
 

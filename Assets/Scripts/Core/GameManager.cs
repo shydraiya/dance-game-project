@@ -102,6 +102,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
     }
 
+    // 게임씬이 로드 되면 실행되어서 패턴과 곡 정보를 불러옴  
     private void LoadSelectedSongPattern()
     {
         SongSessionController session = SongSessionController.Instance;
@@ -111,7 +112,7 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("No selected song session found.", this);
             return;
         }
-
+        
         SongData song = session.SelectedSong;
         session.LoadSelectedPattern();
 

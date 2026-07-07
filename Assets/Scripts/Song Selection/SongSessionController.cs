@@ -7,10 +7,13 @@ public class SongSessionController : MonoBehaviour
     public static SongSessionController Instance { get; private set; }
 
     public SongData SelectedSong { get; private set; }
+
+    // pattern data 담는 배열
     public PatternFrame[] SelectedPatternFrames { get; private set; } = new PatternFrame[0];
     public bool HasSelectedSong => SelectedSong != null;
     public bool HasSelectedPattern => SelectedPatternFrames.Length > 0;
 
+    // singleton 패턴. game 씬으로 넘어가도 남아서 정보를 전달함
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -23,6 +26,7 @@ public class SongSessionController : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    // sessionController 만드는 함수
     public static SongSessionController GetOrCreate()
     {
         if (Instance != null)
@@ -33,6 +37,7 @@ public class SongSessionController : MonoBehaviour
         GameObject sessionObject = new GameObject(nameof(SongSessionController));
         return sessionObject.AddComponent<SongSessionController>();
     }
+
 
     public void SetSelectedSong(SongData song)
     {
@@ -46,6 +51,8 @@ public class SongSessionController : MonoBehaviour
         SelectedPatternFrames = new PatternFrame[0];
     }
 
+
+    // patternPath를 바탕으로 패턴을 불러옴
     public void LoadSelectedPattern()
     {
         if (SelectedSong == null)
