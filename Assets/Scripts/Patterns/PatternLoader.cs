@@ -28,7 +28,7 @@ public class PatternLoader : MonoBehaviour
         if (Frames.Count > 0)
         {
             Debug.Log($"First frame time: {Frames[0].time}");
-            Debug.Log($"Neck angle: {Frames[0].GetAngle("neck")}");
+            Debug.Log($"Neck angle: {Frames[0].GetAngle(PatternJoint.Neck)}");
         }
     }
 
@@ -78,16 +78,24 @@ public class PatternLoader : MonoBehaviour
             PatternFrame frame = new PatternFrame();
 
             frame.time = ParseFloat(cells[timeIndex]);
+            int jointId = 0;
 
             for (int j = 0; j < headers.Count; j++)
             {
                 if (j == timeIndex)
                     continue;
 
-                string key = headers[j];
                 Vector3 angle = ParseVector3(cells[j]);
+                if (jointId < PatternFrame.JointCount)
+                {
+                    frame.angles[jointId] = angle;
+                }
+                else
+                {
+                    Debug.LogWarning($"Extra pattern angle column at line {i + 1}, column {j + 1}. Skipped.");
+                }
 
-                frame.angles[key] = angle;
+                jointId++;
             }
 
             result.Add(frame);
@@ -157,24 +165,5 @@ public class PatternLoader : MonoBehaviour
         result.Add(current.ToString().Trim());
 
         return result;
-    }
-}
-
-[Serializable]
-public class PatternFrame
-{
-    public float time;
-
-    public Dictionary<string, Vector3> angles = new Dictionary<string, Vector3>();
-
-    public Vector3 GetAngle(string angleName)
-    {
-        if (angles.TryGetValue(angleName, out Vector3 value))
-        {
-            return value;
-        }
-
-        Debug.LogWarning($"Angle not found: {angleName}");
-        return Vector3.zero;
     }
 }

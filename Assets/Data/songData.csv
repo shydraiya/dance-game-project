@@ -1,21 +1,21 @@
-no,title,author,time,difficulty
-1,Zero-Break,Cosmograph,100,15
-2,1! 2! 3! 4! Streaming rn CHU!,Sobreem,120,15
-3,Heliocentrism,EYEN,130,15
-4,DIE IN,TAK X Sobrem,120,15
-5,Nightmare,M2U,120,15
-6,Sleipnir,Xeon X 7SEQ,120,15
-7,#1f1e33,Camellia,110,15
-8,A,A,10,14
-9,B,B,20,13
-10,C,C,30,12
-11,D,D,40,11
-12,E,E,50,10
-13,F,F,60,9
-14,G,G,70,8
-15,H,H,80,7
-16,I,I,90,6
-17,J,J,100,5
-18,K,K,110,4
-19,L,L,120,3
-20,M,M,130,2
+no,title,author,time,difficulty,musicPath,patternPath
+1,Zero-Break,Cosmograph,100,15,,pattern_sample.csv
+2,1! 2! 3! 4! Streaming rn CHU!,Sobreem,120,15,,
+3,Heliocentrism,EYEN,130,15,,
+4,DIE IN,TAK X Sobrem,120,15,,
+5,Nightmare,M2U,120,15,,
+6,Sleipnir,Xeon X 7SEQ,120,15,,
+7,#1f1e33,Camellia,110,15,,
+8,A,A,10,14,,
+9,B,B,20,13,,
+10,C,C,30,12,,
+11,D,D,40,11,,
+12,E,E,50,10,,
+13,F,F,60,9,,
+14,G,G,70,8,,
+15,H,H,80,7,,
+16,I,I,90,6,,
+17,J,J,100,5,,
+18,K,K,110,4,,
+19,L,L,120,3,,
+20,M,M,130,2,,

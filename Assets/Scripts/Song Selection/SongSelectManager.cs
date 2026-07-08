@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class SongSelectManager : MonoBehaviour
 {
@@ -13,6 +14,10 @@ public class SongSelectManager : MonoBehaviour
 
     [Tooltip("마지막 곡에서 아래를 누르면 첫 곡으로 돌아갈지 여부")]
     [SerializeField] private bool loopSongList = true;
+
+    [Tooltip("곡이 선택되면 이동할 씬의 이름")]
+    [Header("Scene Flow")]
+    [SerializeField] private string gameSceneName = "Game";
 
     [Header("UI References")]
     [SerializeField] private SongDescUI songDescUI;
@@ -78,6 +83,10 @@ public class SongSelectManager : MonoBehaviour
         {
             MoveDown();
         }
+        else if (Keyboard.current.enterKey.wasPressedThisFrame || Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            ConfirmSelection();
+        }
     }
 
     public void MoveUp()
@@ -88,6 +97,25 @@ public class SongSelectManager : MonoBehaviour
     public void MoveDown()
     {
         TryMove(1);
+    }
+
+    public void ConfirmSelection()
+    {
+        SongData selectedSong = GetSelectedSong();
+
+        if (selectedSong == null)
+        {
+            Debug.LogError("Selected song is missing.", this);
+            return;
+        }
+
+        SongSessionController.GetOrCreate().SetSelectedSong(selectedSong);
+        SceneManager.LoadScene(gameSceneName);
+    }
+
+    public SongData GetSelectedSong()
+    {
+        return GetSongByIndex(selectedIndex);
     }
 
     private void LoadSongData()

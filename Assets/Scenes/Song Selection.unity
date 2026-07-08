@@ -702,6 +702,7 @@ MonoBehaviour:
   songDataCsv: {fileID: 4900000, guid: 666cf5e16d50d2f48998adae5a6486d0, type: 3}
   initialSelectedIndex: 0
   loopSongList: 1
+  gameSceneName: Reader Test
   songDescUI: {fileID: 1235693306}
   songListContent: {fileID: 1156948574}
   songRowPrefab: {fileID: 1376292244201016305, guid: 9e5a8a1baaadd264289300f4e5efe75d, type: 3}
@@ -799,6 +800,50 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1359305534
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1359305536}
+  - component: {fileID: 1359305535}
+  m_Layer: 0
+  m_Name: SongSessionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1359305535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1359305534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e095b7d06b2545239b4067dc8ee8aa57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SongSessionController
+--- !u!4 &1359305536
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1359305534}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.05218, y: 0, z: 1.62309}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1204,3 +1249,4 @@ SceneRoots:
   - {fileID: 1714491247}
   - {fileID: 695074647}
   - {fileID: 1292882580}
+  - {fileID: 1359305536}

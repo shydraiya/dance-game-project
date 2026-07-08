@@ -27,6 +27,8 @@ public class HumanoidPoseDriver : MonoBehaviour
   [Header("Landmark Mapping")]
   [Tooltip("Swap incoming MediaPipe left/right labels without flipping the pose coordinates. Enable this when the solution labels your right side as left.")]
   [SerializeField] private bool _mirrorHorizontally = true;
+  [Tooltip("Invert only the incoming landmark X coordinate after centering. This flips the pose coordinates without swapping left/right labels.")]
+  [SerializeField] private bool _invertXCoordinate;
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
   [SerializeField] private Vector3 _rootPositionScale = new Vector3(1.0f, 1.0f, 1.0f);
   [SerializeField] private Vector3 _rootPositionOffset;
@@ -232,6 +234,11 @@ public class HumanoidPoseDriver : MonoBehaviour
     _driveLegs = driveLegs;
   }
 
+  public void SetInvertXCoordinate(bool invertXCoordinate)
+  {
+    _invertXCoordinate = invertXCoordinate;
+  }
+
   public void Recalibrate()
   {
     _isCalibrated = false;
@@ -277,7 +284,7 @@ public class HumanoidPoseDriver : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _pendingPose[i] = new Vector3(landmark.x * _landmarkScale.x, landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
+        _pendingPose[i] = new Vector3(GetMappedX(landmark.x), landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
@@ -293,13 +300,18 @@ public class HumanoidPoseDriver : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _pendingPose[i] = new Vector3((landmark.x - 0.5f) * _landmarkScale.x, (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
+        _pendingPose[i] = new Vector3(GetMappedX(landmark.x - 0.5f), (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
       _hasPendingPose = true;
       _receivedPoseFrameCount++;
     }
+  }
+
+  private float GetMappedX(float centeredX)
+  {
+    return centeredX * (_invertXCoordinate ? -_landmarkScale.x : _landmarkScale.x);
   }
 
   private int GetSourceLandmarkIndex(int targetIndex)
