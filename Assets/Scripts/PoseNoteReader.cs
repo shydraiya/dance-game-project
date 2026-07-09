@@ -8,6 +8,18 @@ using UnityEngine;
 public class PoseNoteReader : MonoBehaviour
 {
   private const int LandmarkCount = 33;
+  private static readonly string[] PatternJointKeys =
+  {
+    "neck",
+    "shoulder_l",
+    "shoulder_r",
+    "elbow_l",
+    "elbow_r",
+    "hip_l",
+    "hip_r",
+    "knee_l",
+    "knee_r"
+  };
 
   private enum PoseIndex
   {
@@ -255,20 +267,23 @@ public class PoseNoteReader : MonoBehaviour
   {
     var totalAngle = 0.0f;
     var comparedParts = 0;
+    var jointCount = Mathf.Min(PatternFrame.JointCount, PatternJointKeys.Length);
 
-    foreach (var target in frame.angles)
+    for (var jointId = 0; jointId < jointCount; jointId++)
     {
-      if (!_currentPoseAngles.TryGetValue(target.Key, out var currentDirection))
+      var jointKey = PatternJointKeys[jointId];
+      if (!_currentPoseAngles.TryGetValue(jointKey, out var currentDirection))
       {
         continue;
       }
 
-      if (target.Value.sqrMagnitude < 0.000001f || currentDirection.sqrMagnitude < 0.000001f)
+      var targetDirection = frame.GetAngle(jointId);
+      if (targetDirection.sqrMagnitude < 0.000001f || currentDirection.sqrMagnitude < 0.000001f)
       {
         continue;
       }
 
-      totalAngle += Vector3.Angle(currentDirection.normalized, target.Value.normalized);
+      totalAngle += Vector3.Angle(currentDirection.normalized, targetDirection.normalized);
       comparedParts++;
     }
 
