@@ -4,10 +4,24 @@ using Mediapipe.Tasks.Components.Containers;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
 using UnityEngine;
-
+//함수이름이랑 서식 전부 추천대로 고쳐줘 함수 기능에 따라
 public class PoseNoteReader : MonoBehaviour
 {
   private const int LandmarkCount = 33;
+
+  /*
+   * Module: PoseNoteReader
+   *
+   * Pattern Test scene에서 사용자의 MediaPipe 포즈와 CSV 패턴 프레임을 비교해
+   * Perfect/Good/Bad/Miss 판정을 만드는 모듈입니다.
+   *
+   * 입력:
+   * - CSV의 PatternFrame 
+   * - PoseLandmarkerRunner 또는 WebCamPoseLandmarkerRunner
+   *
+   * 용빈수정 Vector3[] 배열사용
+   * CSV 순서와 PatternJoint enum 순서를 맞춰 jointId로 비교
+   */
   private static readonly string[] PatternJointKeys =
   {
     "neck",
@@ -45,7 +59,7 @@ public class PoseNoteReader : MonoBehaviour
     Bad,
     Good,
     Perfect
-  }
+  }//판정들 맘에 안들면 바꿔도딤
 
   [Serializable]
   public struct JudgeResult
@@ -128,6 +142,7 @@ public class PoseNoteReader : MonoBehaviour
 
   private void Update()
   {
+    // Pattern Test의 게임 시간이 흐르는 동안만 현재 포즈와 패턴을 비교//타임 맞게 썻는지 체크 한번만 여기 타임 이해도 자신업스
     if (!GameManager.instance || !GameManager.instance.gamePlay)
     {
       return;
@@ -160,6 +175,8 @@ public class PoseNoteReader : MonoBehaviour
       return new JudgeResult { rank = JudgeRank.None, noteTime = -1.0f };
     }
 
+    // 현재 시간 근처의 CSV 프레임 비교
+    // forward/backward spare는 판정 허용 프레임 범위
     var fromTime = currentTime - Mathf.Max(0, _backwardSpare) * _frameTime;
     var toTime = currentTime + Mathf.Max(0, _forwardSpare) * _frameTime;
     var bestResult = new JudgeResult { rank = JudgeRank.None, score = -1.0f, noteTime = -1.0f };
@@ -183,6 +200,8 @@ public class PoseNoteReader : MonoBehaviour
 
   private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
   {
+    // MediaPipe가 world landmark를 주면 우선 사용,
+    // 없으면 normalized landmark를 중앙 기준 좌표로 변환해 사용//차피 csv 로 변환할거면 상관없음
     var worldPose = result.poseWorldLandmarks;
     if (worldPose != null && worldPose.Count > 0 && worldPose[0].landmarks != null && worldPose[0].landmarks.Count >= LandmarkCount)
     {
@@ -250,6 +269,9 @@ public class PoseNoteReader : MonoBehaviour
     }
 
     _currentPoseAngles.Clear();
+
+    // 현재 landmark 좌표를 CSV와 같은 9개 관절 방향 벡터로 변환
+    // PatternJointKeys / PatternFrame.angles
     TryAddDirection("neck", pose, visibility, PoseIndex.LeftHip, PoseIndex.RightHip, PoseIndex.LeftShoulder, PoseIndex.RightShoulder);
     TryAddDirection("shoulder_l", pose, visibility, PoseIndex.LeftShoulder, PoseIndex.LeftElbow);
     TryAddDirection("shoulder_r", pose, visibility, PoseIndex.RightShoulder, PoseIndex.RightElbow);
@@ -269,6 +291,8 @@ public class PoseNoteReader : MonoBehaviour
     var comparedParts = 0;
     var jointCount = Mathf.Min(PatternFrame.JointCount, PatternJointKeys.Length);
 
+    // 변경된 CSV 구조Vector3[]-대용빈방식
+    //  Dictionary -> jointId로
     for (var jointId = 0; jointId < jointCount; jointId++)
     {
       var jointKey = PatternJointKeys[jointId];
@@ -307,6 +331,7 @@ public class PoseNoteReader : MonoBehaviour
 
   private void TryAddDirection(string key, Vector3[] pose, float[] visibility, PoseIndex start, PoseIndex end)
   {
+    // 관절  방향 예: shoulder_l = left shoulder -> left elbow.
     if (!IsVisible(visibility, start) || !IsVisible(visibility, end))
     {
       return;
@@ -323,6 +348,7 @@ public class PoseNoteReader : MonoBehaviour
 
   private void TryAddDirection(string key, Vector3[] pose, float[] visibility, PoseIndex firstStart, PoseIndex secondStart, PoseIndex firstEnd, PoseIndex secondEnd)
   {
+    // neck은 hip center -> shoulder center 방향으로 계산//여기가 좀 그럼...
     if (!IsVisible(visibility, firstStart) || !IsVisible(visibility, secondStart) || !IsVisible(visibility, firstEnd) || !IsVisible(visibility, secondEnd))
     {
       return;
@@ -366,6 +392,7 @@ public class PoseNoteReader : MonoBehaviour
 
   private int GetSourceLandmarkIndex(int targetIndex)
   {
+    // 카메라/화면 좌우가 반대로 들어오는 경우 MediaPipe left/right 인덱스를 교환//이거 수정됬으면(대용빈) 안해도 됨 추후 수정
     if (!_mirrorHorizontally)
     {
       return targetIndex;
