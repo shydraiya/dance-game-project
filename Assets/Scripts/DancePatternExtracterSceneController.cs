@@ -14,6 +14,7 @@ public class DancePatternExtracterSceneController : MonoBehaviour
   private static readonly string[] CsvHeaders =
   {
     "time",
+    "root_position",
     "neck",
     "shoulder_l",
     "shoulder_r",
@@ -556,6 +557,9 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     private Animator _animator;
     private string _fileName;
     private bool _normalize;
+    private Transform _hips;
+    private Vector3 _initialHipsPosition;
+    private Quaternion _initialAnimatorRotation;
     private readonly List<string> _lines = new List<string>();
 
     public void Begin(Animator animator, string fileName, bool normalize)
@@ -563,6 +567,9 @@ public class DancePatternExtracterSceneController : MonoBehaviour
       _animator = animator;
       _fileName = string.IsNullOrWhiteSpace(fileName) ? "dance_pattern_export.csv" : fileName;
       _normalize = normalize;
+      _hips = animator != null ? animator.GetBoneTransform(HumanBodyBones.Hips) : null;
+      _initialHipsPosition = _hips != null ? _hips.position : animator.transform.position;
+      _initialAnimatorRotation = animator.transform.rotation;
       _lines.Clear();
       _lines.Add(string.Join(",", CsvHeaders));
     }
@@ -579,7 +586,16 @@ public class DancePatternExtracterSceneController : MonoBehaviour
       cells.Add(time.ToString("0.######", CultureInfo.InvariantCulture));
       for (int i = 1; i < CsvHeaders.Length; i++)
       {
-        cells.Add(FormatVector(frame[CsvHeaders[i]]));
+        if (CsvHeaders[i] == "root_position")
+        {
+          Vector3 currentPosition = _hips != null ? _hips.position : _animator.transform.position;
+          Vector3 rootDelta = Quaternion.Inverse(_initialAnimatorRotation) * (currentPosition - _initialHipsPosition);
+          cells.Add(FormatVector(rootDelta));
+        }
+        else
+        {
+          cells.Add(FormatVector(frame[CsvHeaders[i]]));
+        }
       }
 
       _lines.Add(string.Join(",", cells));
@@ -615,6 +631,9 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     private float _smoothing = 18.0f;
     private float _time;
     private int _cursor;
+    private Vector3 _playbackRootPosition;
+    private Quaternion _playbackRootRotation;
+    private Animator _rootReferenceAnimator;
 
     public int FrameCount
     {
@@ -626,6 +645,12 @@ public class DancePatternExtracterSceneController : MonoBehaviour
       _animator = animator;
       _smoothing = smoothing;
       _normalize = normalize;
+      if (_animator != null && _animator != _rootReferenceAnimator)
+      {
+        _playbackRootPosition = _animator.transform.position;
+        _playbackRootRotation = _animator.transform.rotation;
+        _rootReferenceAnimator = _animator;
+      }
       CacheSegments();
     }
 
@@ -749,6 +774,7 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     {
       float smoothing = 1.0f - Mathf.Exp(-_smoothing * Time.deltaTime);
       smoothing = Mathf.Clamp01(smoothing * weight);
+      ApplyRootPosition(Vector3.Lerp(a.Get("root_position"), b.Get("root_position"), blend), smoothing);
       ApplyDirection("neck", Vector3.Slerp(a.Get("neck"), b.Get("neck"), blend), smoothing);
       ApplyDirection("shoulder_l", Vector3.Slerp(a.Get("shoulder_l"), b.Get("shoulder_l"), blend), smoothing);
       ApplyDirection("shoulder_r", Vector3.Slerp(a.Get("shoulder_r"), b.Get("shoulder_r"), blend), smoothing);
@@ -758,6 +784,17 @@ public class DancePatternExtracterSceneController : MonoBehaviour
       ApplyDirection("hip_r", Vector3.Slerp(a.Get("hip_r"), b.Get("hip_r"), blend), smoothing);
       ApplyDirection("knee_l", Vector3.Slerp(a.Get("knee_l"), b.Get("knee_l"), blend), smoothing);
       ApplyDirection("knee_r", Vector3.Slerp(a.Get("knee_r"), b.Get("knee_r"), blend), smoothing);
+    }
+
+    private void ApplyRootPosition(Vector3 localOffset, float smoothing)
+    {
+      if (_animator == null)
+      {
+        return;
+      }
+
+      Vector3 targetPosition = _playbackRootPosition + (_playbackRootRotation * localOffset);
+      _animator.transform.position = Vector3.Lerp(_animator.transform.position, targetPosition, smoothing);
     }
 
     private void ApplyDirection(string key, Vector3 localDirection, float smoothing)

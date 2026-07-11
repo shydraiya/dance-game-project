@@ -9,7 +9,7 @@ using UnityEngine;
 //Framse[i] 여기에 i번째 패턴 데이터가 들어있음
 //Frames[i].time = i번째 패턴 데이터의 시간 (t = 1 : 1초에서의 패턴 디자인)
 //Frames[i].GetAngle("이름") = 이름의 요구 각도 출력
-//이름 : neck	shoulder_l	shoulder_r	elbow_l	elbow_r	hip_l	hip_r	knee_l	knee_r
+//이름 : root_position  neck	shoulder_l	shoulder_r	elbow_l	elbow_r	hip_l	hip_r	knee_l	knee_r
 //패턴 파일은 Assets/Patterns 내부에 존재
 //지금은 fileName = "pattern_sample.csv" 요렇게 넣었는데, 나중에 바꿀 필요가 있음
 
@@ -78,30 +78,46 @@ public class PatternLoader : MonoBehaviour
             PatternFrame frame = new PatternFrame();
 
             frame.time = ParseFloat(cells[timeIndex]);
-            int jointId = 0;
-
             for (int j = 0; j < headers.Count; j++)
             {
                 if (j == timeIndex)
                     continue;
 
-                Vector3 angle = ParseVector3(cells[j]);
-                if (jointId < PatternFrame.JointCount)
+                Vector3 value = ParseVector3(cells[j]);
+                if (headers[j].Equals("root_position", StringComparison.OrdinalIgnoreCase))
                 {
-                    frame.angles[jointId] = angle;
-                }
-                else
-                {
-                    Debug.LogWarning($"Extra pattern angle column at line {i + 1}, column {j + 1}. Skipped.");
+                    frame.rootPosition = value;
+                    continue;
                 }
 
-                jointId++;
+                int jointId = GetJointId(headers[j]);
+                if (jointId >= 0)
+                {
+                    frame.angles[jointId] = value;
+                }
             }
 
             result.Add(frame);
         }
 
         return result;
+    }
+
+    private static int GetJointId(string header)
+    {
+        switch (header.Trim().ToLowerInvariant())
+        {
+            case "neck": return (int)PatternJoint.Neck;
+            case "shoulder_l": return (int)PatternJoint.ShoulderL;
+            case "shoulder_r": return (int)PatternJoint.ShoulderR;
+            case "elbow_l": return (int)PatternJoint.ElbowL;
+            case "elbow_r": return (int)PatternJoint.ElbowR;
+            case "hip_l": return (int)PatternJoint.HipL;
+            case "hip_r": return (int)PatternJoint.HipR;
+            case "knee_l": return (int)PatternJoint.KneeL;
+            case "knee_r": return (int)PatternJoint.KneeR;
+            default: return -1;
+        }
     }
 
     private static Vector3 ParseVector3(string value)

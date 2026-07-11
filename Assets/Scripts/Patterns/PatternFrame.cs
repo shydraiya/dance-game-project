@@ -20,6 +20,7 @@ public class PatternFrame
     public const int JointCount = 9;
 
     public float time;
+    public Vector3 rootPosition;
     public Vector3[] angles = new Vector3[JointCount];
 
     public Vector3 GetAngle(PatternJoint joint)
