@@ -286,7 +286,7 @@ MonoBehaviour:
   _targetAnimator: {fileID: 1198038039}
   _poseRunner: {fileID: 1273174938}
   _modelRoot: {fileID: 1198038040}
-  _driveRootPosition: 0
+  _driveRootPosition: 1
   _driveTorso: 0
   _driveHead: 1
   _driveArms: 1
