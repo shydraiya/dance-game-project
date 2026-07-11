@@ -702,7 +702,7 @@ MonoBehaviour:
   songDataCsv: {fileID: 4900000, guid: 666cf5e16d50d2f48998adae5a6486d0, type: 3}
   initialSelectedIndex: 0
   loopSongList: 1
-  gameSceneName: Reader Test
+  gameSceneName: Judge UI
   songDescUI: {fileID: 1235693306}
   songListContent: {fileID: 1156948574}
   songRowPrefab: {fileID: 1376292244201016305, guid: 9e5a8a1baaadd264289300f4e5efe75d, type: 3}

@@ -15,7 +15,7 @@ public class HumanoidPoseDriver : MonoBehaviour
   [SerializeField] private Transform _modelRoot;
 
   [Header("Driving")]
-  [SerializeField] private bool _driveRootPosition;
+  [SerializeField] private bool _driveRootPosition = true;
   [SerializeField] private bool _driveTorso = true;
   [SerializeField] private bool _driveHead = true;
   [SerializeField] private bool _driveArms = true;
@@ -51,8 +51,13 @@ public class HumanoidPoseDriver : MonoBehaviour
   private readonly object _poseLock = new object();
 
   private bool _hasPendingPose;
+  private bool _hasPendingScreenPelvis;
+  private bool _hasScreenPelvis;
   private float _nextStatusLogTime;
   private Vector3 _calibratedPelvisCenter;
+  private Vector3 _pendingScreenPelvisCenter;
+  private Vector3 _latestScreenPelvisCenter;
+  private Vector3 _calibratedScreenPelvisCenter;
   private Vector3 _calibratedRootLocalPosition;
   private Quaternion _calibratedRootRotation = Quaternion.identity;
   private Quaternion _calibratedRootLocalRotation = Quaternion.identity;
@@ -257,15 +262,18 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
   {
+    var normalizedPose = result.poseLandmarks;
+    var hasNormalizedPose = normalizedPose != null && normalizedPose.Count > 0 &&
+      normalizedPose[0].landmarks != null && normalizedPose[0].landmarks.Count >= LandmarkCount;
+
     var worldPose = result.poseWorldLandmarks;
     if (worldPose != null && worldPose.Count > 0 && worldPose[0].landmarks != null && worldPose[0].landmarks.Count >= LandmarkCount)
     {
-      CopyWorldPose(worldPose[0].landmarks);
+      CopyWorldPose(worldPose[0].landmarks, hasNormalizedPose ? normalizedPose[0].landmarks : null);
       return;
     }
 
-    var normalizedPose = result.poseLandmarks;
-    if (normalizedPose != null && normalizedPose.Count > 0 && normalizedPose[0].landmarks != null && normalizedPose[0].landmarks.Count >= LandmarkCount)
+    if (hasNormalizedPose)
     {
       CopyNormalizedPose(normalizedPose[0].landmarks);
       return;
@@ -277,7 +285,7 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
   }
 
-  private void CopyWorldPose(IReadOnlyList<Landmark> landmarks)
+  private void CopyWorldPose(IReadOnlyList<Landmark> landmarks, IReadOnlyList<NormalizedLandmark> normalizedLandmarks)
   {
     lock (_poseLock)
     {
@@ -288,6 +296,7 @@ public class HumanoidPoseDriver : MonoBehaviour
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
+      _hasPendingScreenPelvis = TryGetScreenPelvisCenter(normalizedLandmarks, out _pendingScreenPelvisCenter);
       _hasPendingPose = true;
       _receivedPoseFrameCount++;
     }
@@ -304,6 +313,7 @@ public class HumanoidPoseDriver : MonoBehaviour
         _pendingVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
+      _hasPendingScreenPelvis = TryGetScreenPelvisCenter(landmarks, out _pendingScreenPelvisCenter);
       _hasPendingPose = true;
       _receivedPoseFrameCount++;
     }
@@ -370,6 +380,11 @@ public class HumanoidPoseDriver : MonoBehaviour
 
       Array.Copy(_pendingPose, _latestPose, LandmarkCount);
       Array.Copy(_pendingVisibility, _latestVisibility, LandmarkCount);
+      _hasScreenPelvis = _hasPendingScreenPelvis;
+      if (_hasPendingScreenPelvis)
+      {
+        _latestScreenPelvisCenter = _pendingScreenPelvisCenter;
+      }
       _hasPendingPose = false;
       _hasPose = true;
     }
@@ -474,6 +489,10 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
 
     _calibratedPelvisCenter = GetPelvisCenter(_latestPose);
+    if (_hasScreenPelvis)
+    {
+      _calibratedScreenPelvisCenter = _latestScreenPelvisCenter;
+    }
     _calibratedRootLocalPosition = _modelRoot.localPosition;
     _calibratedRootRotation = _modelRoot.rotation;
     _calibratedRootLocalRotation = _modelRoot.localRotation;
@@ -492,7 +511,11 @@ public class HumanoidPoseDriver : MonoBehaviour
       return;
     }
 
-    var pelvisDelta = GetPelvisCenter(_latestPose) - _calibratedPelvisCenter;
+    // World landmarks are pelvis-relative, so they cannot represent movement across
+    // the camera image. Use normalized landmarks for root translation when available.
+    var pelvisDelta = _hasScreenPelvis
+      ? _latestScreenPelvisCenter - _calibratedScreenPelvisCenter
+      : GetPelvisCenter(_latestPose) - _calibratedPelvisCenter;
     var targetLocalPosition = _calibratedRootLocalPosition + (_calibratedRootLocalRotation * Vector3.Scale(pelvisDelta, _rootPositionScale)) + _rootPositionOffset;
     var t = 1.0f - Mathf.Exp(-_positionSmoothing * Time.deltaTime);
     _modelRoot.localPosition = Vector3.Lerp(_modelRoot.localPosition, targetLocalPosition, t);
@@ -596,6 +619,23 @@ public class HumanoidPoseDriver : MonoBehaviour
   private Vector3 GetPelvisCenter(Vector3[] pose)
   {
     return (pose[(int)PoseIndex.LeftHip] + pose[(int)PoseIndex.RightHip]) * 0.5f;
+  }
+
+  private bool TryGetScreenPelvisCenter(IReadOnlyList<NormalizedLandmark> landmarks, out Vector3 pelvisCenter)
+  {
+    pelvisCenter = default;
+    if (landmarks == null || landmarks.Count < LandmarkCount)
+    {
+      return false;
+    }
+
+    var leftHip = landmarks[GetSourceLandmarkIndex((int)PoseIndex.LeftHip)];
+    var rightHip = landmarks[GetSourceLandmarkIndex((int)PoseIndex.RightHip)];
+    var x = ((leftHip.x + rightHip.x) * 0.5f) - 0.5f;
+    var y = ((leftHip.y + rightHip.y) * 0.5f) - 0.5f;
+    var z = (leftHip.z + rightHip.z) * 0.5f;
+    pelvisCenter = new Vector3(GetMappedX(x), y * _landmarkScale.y, z * _landmarkScale.z);
+    return true;
   }
 
   private bool HasCorePose()
