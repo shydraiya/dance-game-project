@@ -52,6 +52,7 @@ public class PoseNoteReader : MonoBehaviour
     RightAnkle = 28
   }
 
+  /*
   public enum JudgeRank
   {
     None,
@@ -60,7 +61,7 @@ public class PoseNoteReader : MonoBehaviour
     Good,
     Perfect
   }//판정들 맘에 안들면 바꿔도딤
-
+  */
   [Serializable]
   public struct JudgeResult
   {
@@ -89,6 +90,7 @@ public class PoseNoteReader : MonoBehaviour
   [SerializeField] private float _badAngle = 45.0f;
   [SerializeField] private bool _mirrorHorizontally = true;
   [SerializeField] private bool _logJudgement;
+  [SerializeField] public JudgeUI judgeUI;
 
   [Header("Debug")]
   [SerializeField] private JudgeRank _lastJudge = JudgeRank.None;
@@ -96,6 +98,15 @@ public class PoseNoteReader : MonoBehaviour
   [SerializeField] private float _lastAverageAngle;
   [SerializeField] private float _lastMatchedNoteTime = -1.0f;
   [SerializeField] private int _lastComparedParts;
+
+  //주의!!!!! 중간 발표용으로 만든 임시용 코드임!!!!!!!!!!!!!!
+  //나중에 리팩토링 할 때 싹 날려야 함!!!!!!!!!!!!!!!!!!!!
+  [SerializeField] private float _judgeInterval = 2.0f;
+
+  private float _nextJudgeTime = 2.0f;
+  private float _lastObservedGameTime = float.NegativeInfinity; 
+
+  //!!!!!!!!!!!!!여기까지!!!!!!!!!!!!!!!!!!!!!
 
   private readonly object _poseLock = new();
   private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
@@ -106,6 +117,8 @@ public class PoseNoteReader : MonoBehaviour
 
   public JudgeResult LastResult { get; private set; }
   public event Action<JudgeResult> JudgementUpdated;
+
+  
 
   private void Awake()
   {
@@ -121,7 +134,7 @@ public class PoseNoteReader : MonoBehaviour
       _poseRunner.PoseLandmarksUpdated += OnPoseLandmarksUpdated;
     }
 
-    if (_webCamPoseRunner != null)
+    else if (_webCamPoseRunner != null)
     {
       _webCamPoseRunner.PoseLandmarksUpdated += OnPoseLandmarksUpdated;
     }
@@ -134,12 +147,89 @@ public class PoseNoteReader : MonoBehaviour
       _poseRunner.PoseLandmarksUpdated -= OnPoseLandmarksUpdated;
     }
 
-    if (_webCamPoseRunner != null)
+    else if (_webCamPoseRunner != null)
     {
       _webCamPoseRunner.PoseLandmarksUpdated -= OnPoseLandmarksUpdated;
     }
   }
+  //발표용 임시 update 함수임!!!!!!!!!!!!
+  //나중에 꼭 지울 것!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  private void Update()
+  {
+      if (GameManager.instance == null || !GameManager.instance.gamePlay)
+      {
+          return;
+      }
 
+      if (!_hasPose ||
+          _patternLoader == null ||
+          _patternLoader.Frames == null ||
+          _patternLoader.Frames.Count == 0)
+      {
+          return;
+      }
+
+      float gameTime = GameManager.instance.gameTime;
+
+      // 게임 시간이 처음으로 되돌아간 경우 타이머 초기화
+      if (gameTime < _lastObservedGameTime)
+      {
+          _nextJudgeTime = gameTime + _judgeInterval;
+      }
+
+      _lastObservedGameTime = gameTime;
+
+      // 다음 판정 시간이 아직 되지 않았으면 종료
+      if (gameTime < _nextJudgeTime)
+      {
+          return;
+      }
+
+      // 프레임 드롭 등으로 시간을 크게 건너뛰어도
+      // 다음 판정 시간이 현재 시간보다 뒤에 있도록 갱신
+      do
+      {
+          _nextJudgeTime += _judgeInterval;
+      }
+      while (_nextJudgeTime <= gameTime);
+
+      JudgeResult result = JudgeAtTime(gameTime);
+
+      LastResult = result;
+      _lastJudge = result.rank;
+      _lastScore = result.score;
+      _lastAverageAngle = result.averageAngle;
+      _lastMatchedNoteTime = result.noteTime;
+      _lastComparedParts = result.comparedParts;
+
+      JudgementUpdated?.Invoke(result);
+
+      if (result.rank == JudgeRank.None)
+      {
+          return;
+      }
+
+      if (judgeUI != null)
+      {
+          judgeUI.ShowJudge(result.rank);
+      }
+      else
+      {
+          Debug.LogError(
+              $"{nameof(PoseNoteReader)}: JudgeUI가 연결되지 않았습니다.",
+              this
+          );
+      }
+
+      Debug.Log(
+          $"{nameof(PoseNoteReader)} {result.rank} " +
+          $"score={result.score:0.000}, " +
+          $"averageAngle={result.averageAngle:0.0}, " +
+          $"noteTime={result.noteTime:0.000}"
+      );
+  }
+
+  /* 나중에 중간 발표 끝나면 요 코드로 되돌려야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   private void Update()
   {
     // Pattern Test의 게임 시간이 흐르는 동안만 현재 포즈와 패턴을 비교//타임 맞게 썻는지 체크 한번만 여기 타임 이해도 자신업스
@@ -162,11 +252,13 @@ public class PoseNoteReader : MonoBehaviour
     _lastComparedParts = result.comparedParts;
     JudgementUpdated?.Invoke(result);
 
-    if (_logJudgement && result.rank != JudgeRank.None)
+    if (result.rank != JudgeRank.None)
     {
+      judgeUI.ShowJudge(result.rank);
       Debug.Log($"{nameof(PoseNoteReader)} {result.rank} score={result.score:0.000}, averageAngle={result.averageAngle:0.0}, noteTime={result.noteTime:0.000}");
     }
   }
+  */
 
   public JudgeResult JudgeAtTime(float currentTime)
   {
