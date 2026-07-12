@@ -52,6 +52,7 @@ public class PoseNoteReader : MonoBehaviour
     RightAnkle = 28
   }
 
+  /*
   public enum JudgeRank
   {
     None,
@@ -60,6 +61,7 @@ public class PoseNoteReader : MonoBehaviour
     Good,
     Perfect
   }//판정들 맘에 안들면 바꿔도딤
+  */
 
   [Serializable]
   public struct JudgeResult
@@ -106,6 +108,8 @@ public class PoseNoteReader : MonoBehaviour
 
   public JudgeResult LastResult { get; private set; }
   public event Action<JudgeResult> JudgementUpdated;
+
+  private JudgeUI judgeUI;
 
   private void Awake()
   {
@@ -164,6 +168,7 @@ public class PoseNoteReader : MonoBehaviour
 
     if (_logJudgement && result.rank != JudgeRank.None)
     {
+      judgeUI.ShowJudge(_lastJudge);
       Debug.Log($"{nameof(PoseNoteReader)} {result.rank} score={result.score:0.000}, averageAngle={result.averageAngle:0.0}, noteTime={result.noteTime:0.000}");
     }
   }
