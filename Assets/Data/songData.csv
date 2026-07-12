@@ -1,21 +1,21 @@
 no,title,author,time,difficulty,musicPath,patternPath
-1,Zero-Break,Cosmograph,100,15,,HumanF@Dance01 - Loop_pattern.csv
-2,1! 2! 3! 4! Streaming rn CHU!,Sobreem,120,15,,HumanF@Dance01 - Loop_pattern.csv
-3,Heliocentrism,EYEN,130,15,,HumanF@Dance01 - Loop_pattern.csv
-4,DIE IN,TAK X Sobrem,120,15,,HumanF@Dance01 - Loop_pattern.csv
-5,Nightmare,M2U,120,15,,HumanF@Dance01 - Loop_pattern.csv
-6,Sleipnir,Xeon X 7SEQ,120,15,,HumanF@Dance01 - Loop_pattern.csv
-7,#1f1e33,Camellia,110,15,,HumanF@Dance01 - Loop_pattern.csv
-8,A,A,10,14,,HumanF@Dance01 - Loop_pattern.csv
-9,B,B,20,13,,HumanF@Dance01 - Loop_pattern.csv
-10,C,C,30,12,,HumanF@Dance01 - Loop_pattern.csv
-11,D,D,40,11,,HumanF@Dance01 - Loop_pattern.csv
-12,E,E,50,10,,HumanF@Dance01 - Loop_pattern.csv
-13,F,F,60,9,,HumanF@Dance01 - Loop_pattern.csv
-14,G,G,70,8,,HumanF@Dance01 - Loop_pattern.csv
-15,H,H,80,7,,HumanF@Dance01 - Loop_pattern.csv
-16,I,I,90,6,,HumanF@Dance01 - Loop_pattern.csv
-17,J,J,100,5,,HumanF@Dance01 - Loop_pattern.csv
-18,K,K,110,4,,HumanF@Dance01 - Loop_pattern.csv
-19,L,L,120,3,,HumanF@Dance01 - Loop_pattern.csv
-20,M,M,130,2,,HumanF@Dance01 - Loop_pattern.csv
+1,Zero-Break,Cosmograph,100,15,,dance01.csv
+2,1! 2! 3! 4! Streaming rn CHU!,Sobreem,120,15,,dance02.csv
+3,Heliocentrism,EYEN,130,15,,dance03.csv
+4,DIE IN,TAK X Sobrem,120,15,,dance04.csv
+5,Nightmare,M2U,120,15,,dance05.csv
+6,Sleipnir,Xeon X 7SEQ,120,15,,dance06.csv
+7,#1f1e33,Camellia,110,15,,dance01.csv
+8,A,A,10,14,,dance02.csv
+9,B,B,20,13,,dance03.csv
+10,C,C,30,12,,dance04.csv
+11,D,D,40,11,,dance05.csv
+12,E,E,50,10,,dance06.csv
+13,F,F,60,9,,dance01.csv
+14,G,G,70,8,,dance02.csv
+15,H,H,80,7,,dance03.csv
+16,I,I,90,6,,dance04.csv
+17,J,J,100,5,,dance05.csv
+18,K,K,110,4,,dance06.csv
+19,L,L,120,3,,dance01.csv
+20,M,M,130,2,,dance02.csv
