@@ -81,6 +81,8 @@ public class PosePreviewController : MonoBehaviour
     //요걸 방지하기 위해 mask를 이용했음
     private void Awake()
     {
+        ResolvePreviewRawImage();
+
         if (!ValidateReferences())
         {
             enabled = false;
@@ -179,6 +181,30 @@ public class PosePreviewController : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void ResolvePreviewRawImage()
+    {
+        if (previewRawImage != null)
+        {
+            return;
+        }
+
+        GameObject patternRawImageObject = GameObject.Find("HUD_PatternRawImage");
+        if (patternRawImageObject != null && patternRawImageObject.TryGetComponent(out previewRawImage))
+        {
+            return;
+        }
+
+        RawImage[] rawImages = FindObjectsByType<RawImage>(FindObjectsInactive.Include);
+        foreach (RawImage rawImage in rawImages)
+        {
+            if (rawImage.name.Contains("Pattern"))
+            {
+                previewRawImage = rawImage;
+                return;
+            }
+        }
     }
 
     //요건 바이브 코딩 영역임

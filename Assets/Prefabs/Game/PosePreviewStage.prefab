@@ -209,6 +209,7 @@ MonoBehaviour:
   previewCamera: {fileID: 8833381868400850727}
   mannequinRoot: {fileID: 4536102323756498130}
   mannequinPrefab: {fileID: 7515587546222981938, guid: d4c0d7159c5a44b4c9e0b1bb6c221fe1, type: 3}
+  patternLoader: {fileID: 0}
   previewLayerName: Pose Preview
   renderTextureWidth: 1024
   renderTextureHeight: 256
@@ -216,6 +217,8 @@ MonoBehaviour:
   mannequinLocalRotation: {x: 0, y: 180, z: 0}
   mannequinLocalScale: {x: 1, y: 1, z: 1}
   spawnOnStart: 1
+  spawnPatternFrames: 1
+  patternSpawnInterval: 0.5
   timeToJudgeLine: 2
   judgeLineViewportX: 0.862
   offscreenPadding: 0.5
