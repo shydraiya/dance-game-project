@@ -6,7 +6,13 @@ public class SongSessionController : MonoBehaviour
     // main menu에서 선택한 곡의 정보를 게임 씬으로 넘겨줌
     public static SongSessionController Instance { get; private set; }
 
-    public SongData SelectedSong { get; private set; }
+    [Header("Current Selection (Runtime)")]
+    [SerializeField] private SongData _selectedSong;
+    [SerializeField] private int _loadedPatternFrameCount;
+    [SerializeField] private string _patternTimeRange = "No pattern loaded";
+    [SerializeField] private string _sessionStatus = "No song selected";
+
+    public SongData SelectedSong => _selectedSong;
 
     // pattern data 담는 배열
     public PatternFrame[] SelectedPatternFrames { get; private set; } = new PatternFrame[0];
@@ -41,14 +47,15 @@ public class SongSessionController : MonoBehaviour
 
     public void SetSelectedSong(SongData song)
     {
-        SelectedSong = song;
+        _selectedSong = song;
         LoadSelectedPattern();
     }
 
     public void Clear()
     {
-        SelectedSong = null;
+        _selectedSong = null;
         SelectedPatternFrames = new PatternFrame[0];
+        UpdateInspectorStatus("No song selected");
     }
 
 
@@ -58,6 +65,7 @@ public class SongSessionController : MonoBehaviour
         if (SelectedSong == null)
         {
             SelectedPatternFrames = new PatternFrame[0];
+            UpdateInspectorStatus("No song selected");
             return;
         }
 
@@ -65,9 +73,29 @@ public class SongSessionController : MonoBehaviour
         {
             Debug.LogWarning($"Pattern path is empty: {SelectedSong.title}", this);
             SelectedPatternFrames = new PatternFrame[0];
+            UpdateInspectorStatus("Pattern path is empty");
             return;
         }
 
         SelectedPatternFrames = PatternLoader.LoadPattern(SelectedSong.patternPath).ToArray();
+        UpdateInspectorStatus(SelectedPatternFrames.Length > 0
+            ? "Song and pattern loaded"
+            : "Pattern could not be loaded");
+    }
+
+    private void UpdateInspectorStatus(string status)
+    {
+        _loadedPatternFrameCount = SelectedPatternFrames != null ? SelectedPatternFrames.Length : 0;
+        _sessionStatus = status;
+
+        if (_loadedPatternFrameCount == 0)
+        {
+            _patternTimeRange = "No pattern loaded";
+            return;
+        }
+
+        float firstTime = SelectedPatternFrames[0].time;
+        float lastTime = SelectedPatternFrames[_loadedPatternFrameCount - 1].time;
+        _patternTimeRange = $"{firstTime:0.###} - {lastTime:0.###} sec";
     }
 }

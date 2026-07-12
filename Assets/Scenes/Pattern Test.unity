@@ -350,73 +350,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &900000100
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 465365301366289742, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_Name
-      value: Dance Avatar
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 1.21
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6619925584262165902, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: 26e5f7e7b3ca6b64bb4952368f690511, type: 2}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
---- !u!95 &900000101 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6619925584262165902, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-  m_PrefabInstance: {fileID: 900000100}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &900000200
+--- !u!1 &1190063860
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -424,133 +358,53 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 900000201}
-  - component: {fileID: 900000202}
+  - component: {fileID: 1190063862}
+  - component: {fileID: 1190063861}
   m_Layer: 0
-  m_Name: DancePatternExtracter_Controller
+  m_Name: SongSessionController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &900000201
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 900000200}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &900000202
+--- !u!114 &1190063861
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 900000200}
+  m_GameObject: {fileID: 1190063860}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0668e02a36da0b04288f17eef05ad9fa, type: 3}
+  m_Script: {fileID: 11500000, guid: e095b7d06b2545239b4067dc8ee8aa57, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DancePatternExtracterSceneController
-  _avatarAnimator: {fileID: 900000101}
-  _csvCheckingAnimator: {fileID: 900000301}
-  _previewDanceController: {fileID: 0}
-  _danceControllers:
-  - {fileID: 9100000, guid: 26e5f7e7b3ca6b64bb4952368f690511, type: 2}
-  - {fileID: 9100000, guid: 4361fb7b20e3a0746a2f17e357cb3cb2, type: 2}
-  - {fileID: 9100000, guid: 9605497d90dd80240b479d98e7208428, type: 2}
-  _selectedDanceIndex: 0
-  _playPreviewOnStart: 1
-  _exportFileName: HumanF@Dance06 - Loop_pattern.csv
-  _recordSeconds: 10
-  _sampleRate: 30
-  _normalizeBoneVectors: 1
-  _autoRecordPatternOnDanceChange: 1
-  _recordOnStart: 0
-  _playbackCsvAsset: {fileID: 0}
-  _playbackFileName: HumanF@Dance06 - Loop_pattern.csv
-  _playCsvAssetOnStart: 0
-  _autoPlayCsvAssetOnChange: 1
-  _loopPlayback: 1
-  _playbackSmoothing: 18
-  _isRecording: 0
-  _isPlayingCsv: 0
-  _lastExportPath: 
-  _status: Ready
---- !u!1001 &900000300
-PrefabInstance:
+  m_EditorClassIdentifier: Assembly-CSharp::SongSessionController
+  _selectedSong:
+    no: 0
+    title: 
+    author: 
+    time: 0
+    difficulty: 0
+    musicPath: 
+    patternPath: 
+  _loadedPatternFrameCount: 0
+  _patternTimeRange: No pattern loaded
+  _sessionStatus: No song selected
+--- !u!4 &1190063862
+Transform:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 465365301366289742, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_Name
-      value: csvcheckingdancer
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.79
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 954375999427620852, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6619925584262165902, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
---- !u!95 &900000301 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6619925584262165902, guid: 4df9774f9cbf020479b97d3c239a4a8f, type: 3}
-  m_PrefabInstance: {fileID: 900000300}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1190063860}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.83916, z: 9.92747}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1198038038 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1692468126580653705, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
@@ -1420,6 +1274,63 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1001 &2117525959
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_Name
+      value: Dance Avatar_L
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
 --- !u!1001 &1029697398915892100
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1590,6 +1501,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f34cb04ba0a459b408e4549be7bcbb44, type: 3}
+--- !u!1001 &6561227978677355894
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1008097048199911374, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: _loop
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_Name
+      value: Dance Avatar_R
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1603,9 +1575,9 @@ SceneRoots:
   - {fileID: 580299315}
   - {fileID: 367740263}
   - {fileID: 1575863252}
-  - {fileID: 900000100}
-  - {fileID: 900000201}
-  - {fileID: 900000300}
+  - {fileID: 6561227978677355894}
+  - {fileID: 2117525959}
   - {fileID: 3360349313317371447}
   - {fileID: 1029697398915892100}
   - {fileID: 2045359113}
+  - {fileID: 1190063862}
