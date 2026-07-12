@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +21,9 @@ public class PosePreviewController : MonoBehaviour
 
     [SerializeField]
     private GameObject mannequinPrefab;
+
+    [SerializeField]
+    private PatternLoader patternLoader;
 
     [Header("Layer")]
     [SerializeField]
@@ -47,9 +51,18 @@ public class PosePreviewController : MonoBehaviour
     [SerializeField]
     private bool spawnOnStart = true;
 
+    [SerializeField]
+    private bool spawnPatternFrames = true;
+
+    [SerializeField, Min(0.01f)]
+    private float patternSpawnInterval = 0.5f;
+
     private RenderTexture renderTexture;
 
     private int previewLayer;
+    private int nextPatternFrameIndex;
+    private float lastSpawnedPatternTime = float.NegativeInfinity;
+    private float lastObservedGameTime;
 
     [Header("Movement")]
     [SerializeField, Min(0.01f)]
@@ -96,9 +109,45 @@ public class PosePreviewController : MonoBehaviour
     //나중에 지우면 됨!!!!!!
     private void Start()
     {
-        if (spawnOnStart)
+        ResolvePatternLoader();
+
+        if (spawnOnStart && !ShouldSpawnFromPattern())
         {
             SpawnMannequin();
+        }
+    }
+
+    private void Update()
+    {
+        if (!ShouldSpawnFromPattern())
+        {
+            return;
+        }
+
+        float gameTime = GameManager.instance != null
+            ? GameManager.instance.gameTime
+            : Time.timeSinceLevelLoad;
+
+        if (gameTime < lastObservedGameTime)
+        {
+            nextPatternFrameIndex = 0;
+            lastSpawnedPatternTime = float.NegativeInfinity;
+        }
+
+        lastObservedGameTime = gameTime;
+        IReadOnlyList<PatternFrame> frames = patternLoader.Frames;
+        float targetTime = gameTime + timeToJudgeLine;
+
+        while (nextPatternFrameIndex < frames.Count && frames[nextPatternFrameIndex].time <= targetTime)
+        {
+            PatternFrame frame = frames[nextPatternFrameIndex];
+            if (frame.time - lastSpawnedPatternTime >= patternSpawnInterval)
+            {
+                SpawnMannequin(frame);
+                lastSpawnedPatternTime = frame.time;
+            }
+
+            nextPatternFrameIndex++;
         }
     }
 
@@ -175,6 +224,11 @@ public class PosePreviewController : MonoBehaviour
     //나중에 관절 각도 반영해서 추가하도록 인자 넣는거 만들어야함
     public GameObject SpawnMannequin()
     {
+        return SpawnMannequin(null);
+    }
+
+    public GameObject SpawnMannequin(PatternFrame patternFrame)
+    {
         GameObject mannequin = Instantiate(
             mannequinPrefab,
             mannequinRoot
@@ -202,6 +256,10 @@ public class PosePreviewController : MonoBehaviour
 
         SetLayerRecursively(mannequin, previewLayer);
         PrepareMannequin(mannequin);
+        if (patternFrame != null)
+        {
+            ApplyPatternFrame(mannequin, patternFrame);
+        }
 
         StartCoroutine(
             MoveMannequinRoutine(
@@ -213,6 +271,28 @@ public class PosePreviewController : MonoBehaviour
         );
 
         return mannequin;
+    }
+
+    private bool ShouldSpawnFromPattern()
+    {
+        ResolvePatternLoader();
+        return spawnPatternFrames &&
+            patternLoader != null &&
+            patternLoader.Frames != null &&
+            patternLoader.Frames.Count > 0;
+    }
+
+    private void ResolvePatternLoader()
+    {
+        if (patternLoader == null)
+        {
+            patternLoader = FindAnyObjectByType<PatternLoader>();
+        }
+
+        if (patternLoader != null && (patternLoader.Frames == null || patternLoader.Frames.Count == 0))
+        {
+            patternLoader.LoadSelectedOrDefaultPattern();
+        }
     }
 
     //판정선까지 정해진 시간(t초)만에 이동하도록 좀 코드가 복잡해짐
@@ -387,6 +467,87 @@ public class PosePreviewController : MonoBehaviour
         }
     }
 
+    private void ApplyPatternFrame(GameObject mannequin, PatternFrame frame)
+    {
+        Animator animator = mannequin.GetComponentInChildren<Animator>(true);
+        if (animator == null || !animator.isHuman)
+        {
+            return;
+        }
+
+        animator.Rebind();
+        animator.Update(0.0f);
+
+        Dictionary<PatternJoint, PreviewBoneSegment> segments = CachePreviewSegments(animator);
+        ApplyDirection(animator, segments, PatternJoint.Neck, frame.GetAngle(PatternJoint.Neck));
+        ApplyDirection(animator, segments, PatternJoint.ShoulderL, frame.GetAngle(PatternJoint.ShoulderL));
+        ApplyDirection(animator, segments, PatternJoint.ShoulderR, frame.GetAngle(PatternJoint.ShoulderR));
+        ApplyDirection(animator, segments, PatternJoint.ElbowL, frame.GetAngle(PatternJoint.ElbowL));
+        ApplyDirection(animator, segments, PatternJoint.ElbowR, frame.GetAngle(PatternJoint.ElbowR));
+        ApplyDirection(animator, segments, PatternJoint.HipL, frame.GetAngle(PatternJoint.HipL));
+        ApplyDirection(animator, segments, PatternJoint.HipR, frame.GetAngle(PatternJoint.HipR));
+        ApplyDirection(animator, segments, PatternJoint.KneeL, frame.GetAngle(PatternJoint.KneeL));
+        ApplyDirection(animator, segments, PatternJoint.KneeR, frame.GetAngle(PatternJoint.KneeR));
+    }
+
+    private Dictionary<PatternJoint, PreviewBoneSegment> CachePreviewSegments(Animator animator)
+    {
+        Dictionary<PatternJoint, PreviewBoneSegment> segments = new Dictionary<PatternJoint, PreviewBoneSegment>();
+        AddSegment(segments, PatternJoint.Neck, animator, HumanBodyBones.Neck, HumanBodyBones.Head);
+        if (!segments.ContainsKey(PatternJoint.Neck))
+        {
+            AddSegment(segments, PatternJoint.Neck, animator, HumanBodyBones.UpperChest, HumanBodyBones.Head);
+        }
+        if (!segments.ContainsKey(PatternJoint.Neck))
+        {
+            AddSegment(segments, PatternJoint.Neck, animator, HumanBodyBones.Chest, HumanBodyBones.Head);
+        }
+
+        AddSegment(segments, PatternJoint.ShoulderL, animator, HumanBodyBones.LeftUpperArm, HumanBodyBones.LeftLowerArm);
+        AddSegment(segments, PatternJoint.ShoulderR, animator, HumanBodyBones.RightUpperArm, HumanBodyBones.RightLowerArm);
+        AddSegment(segments, PatternJoint.ElbowL, animator, HumanBodyBones.LeftLowerArm, HumanBodyBones.LeftHand);
+        AddSegment(segments, PatternJoint.ElbowR, animator, HumanBodyBones.RightLowerArm, HumanBodyBones.RightHand);
+        AddSegment(segments, PatternJoint.HipL, animator, HumanBodyBones.LeftUpperLeg, HumanBodyBones.LeftLowerLeg);
+        AddSegment(segments, PatternJoint.HipR, animator, HumanBodyBones.RightUpperLeg, HumanBodyBones.RightLowerLeg);
+        AddSegment(segments, PatternJoint.KneeL, animator, HumanBodyBones.LeftLowerLeg, HumanBodyBones.LeftFoot);
+        AddSegment(segments, PatternJoint.KneeR, animator, HumanBodyBones.RightLowerLeg, HumanBodyBones.RightFoot);
+        return segments;
+    }
+
+    private static void AddSegment(Dictionary<PatternJoint, PreviewBoneSegment> segments, PatternJoint joint, Animator animator, HumanBodyBones start, HumanBodyBones end)
+    {
+        Transform startBone = animator.GetBoneTransform(start);
+        Transform endBone = animator.GetBoneTransform(end);
+        if (startBone == null || endBone == null)
+        {
+            return;
+        }
+
+        Vector3 restDirection = endBone.position - startBone.position;
+        if (restDirection.sqrMagnitude < 0.000001f)
+        {
+            return;
+        }
+
+        PreviewBoneSegment segment = new PreviewBoneSegment();
+        segment.Bone = startBone;
+        segment.RestDirection = restDirection.normalized;
+        segment.RestRotation = startBone.rotation;
+        segments[joint] = segment;
+    }
+
+    private static void ApplyDirection(Animator animator, Dictionary<PatternJoint, PreviewBoneSegment> segments, PatternJoint joint, Vector3 localDirection)
+    {
+        PreviewBoneSegment segment;
+        if (!segments.TryGetValue(joint, out segment) || segment.Bone == null || localDirection.sqrMagnitude < 0.000001f)
+        {
+            return;
+        }
+
+        Vector3 worldDirection = animator.transform.TransformDirection(localDirection.normalized).normalized;
+        segment.Bone.rotation = Quaternion.FromToRotation(segment.RestDirection, worldDirection) * segment.RestRotation;
+    }
+
     //바이브 코딩 영역
     private static void SetLayerRecursively(
         GameObject target,
@@ -419,5 +580,12 @@ public class PosePreviewController : MonoBehaviour
             renderTexture.Release();
             Destroy(renderTexture);
         }
+    }
+
+    private sealed class PreviewBoneSegment
+    {
+        public Transform Bone;
+        public Vector3 RestDirection;
+        public Quaternion RestRotation;
     }
 }

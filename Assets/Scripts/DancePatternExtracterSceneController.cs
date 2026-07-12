@@ -314,7 +314,7 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     _csvPlayback.Configure(_csvCheckingAnimator, _playbackSmoothing, _normalizeBoneVectors);
     if (!_csvPlayback.Load(fileName))
     {
-      _status = "CSV file not found or empty: " + fileName;
+      _status = "CSV file not found, locked, or empty: " + fileName;
       return;
     }
 
@@ -666,7 +666,20 @@ public class DancePatternExtracterSceneController : MonoBehaviour
         return false;
       }
 
-      string[] lines = File.ReadAllLines(path);
+      string[] lines;
+      try
+      {
+        lines = ReadAllLinesShared(path);
+      }
+      catch (IOException)
+      {
+        return false;
+      }
+      catch (UnauthorizedAccessException)
+      {
+        return false;
+      }
+
       return LoadLines(lines);
     }
 
@@ -717,6 +730,21 @@ public class DancePatternExtracterSceneController : MonoBehaviour
       }
 
       return _frames.Count > 0;
+    }
+
+    private static string[] ReadAllLinesShared(string path)
+    {
+      using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+      using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true))
+      {
+        List<string> lines = new List<string>();
+        while (!reader.EndOfStream)
+        {
+          lines.Add(reader.ReadLine());
+        }
+
+        return lines.ToArray();
+      }
     }
 
     public bool Tick(float deltaTime, bool loop)

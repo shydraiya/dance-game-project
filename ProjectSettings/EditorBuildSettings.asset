@@ -6,16 +6,16 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Game.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
     path: Assets/Scenes/Song Selection.unity
     guid: 9c17fcdc2b62590478ad358bc7796185
   - enabled: 1
-    path: Assets/Scenes/Reader Test.unity
-    guid: b7ed5c1d578db654a8926bbac3efa6ac
-  - enabled: 1
     path: Assets/Scenes/Pattern Test.unity
     guid: 60cca37331212974190037e8a7abb5a0
+  - enabled: 1
+    path: Assets/Scenes/Game.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Reader Test.unity
+    guid: b7ed5c1d578db654a8926bbac3efa6ac
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

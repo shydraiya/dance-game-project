@@ -18,18 +18,40 @@ public class PatternLoader : MonoBehaviour
     [SerializeField] private string fileName = "pattern_sample.csv";
 
     public List<PatternFrame> Frames { get; private set; } = new List<PatternFrame>();
+    public string FileName => fileName;
 
     private void Start()
     {
-        Frames = LoadPattern(fileName);
+        LoadSelectedOrDefaultPattern();
 
-        Debug.Log($"Loaded Pattern Frames: {Frames.Count}");
+        Debug.Log($"Loaded Pattern Frames: {Frames.Count} ({fileName})");
 
         if (Frames.Count > 0)
         {
             Debug.Log($"First frame time: {Frames[0].time}");
             Debug.Log($"Neck angle: {Frames[0].GetAngle(PatternJoint.Neck)}");
         }
+    }
+
+    public void LoadSelectedOrDefaultPattern()
+    {
+        SongSessionController session = SongSessionController.Instance;
+        if (session != null && session.HasSelectedSong)
+        {
+            SongData song = session.SelectedSong;
+            if (!string.IsNullOrWhiteSpace(song.patternPath))
+            {
+                fileName = song.patternPath;
+            }
+
+            if (session.HasSelectedPattern)
+            {
+                Frames = new List<PatternFrame>(session.SelectedPatternFrames);
+                return;
+            }
+        }
+
+        Frames = LoadPattern(fileName);
     }
 
     public static List<PatternFrame> LoadPattern(string fileName)
@@ -44,7 +66,21 @@ public class PatternLoader : MonoBehaviour
             return result;
         }
 
-        string[] lines = File.ReadAllLines(path);
+        string[] lines;
+        try
+        {
+            lines = ReadAllLinesShared(path);
+        }
+        catch (IOException exception)
+        {
+            Debug.LogError($"Pattern file could not be read: {path}\n{exception.Message}");
+            return result;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            Debug.LogError($"Pattern file access denied: {path}\n{exception.Message}");
+            return result;
+        }
 
         if (lines.Length <= 1)
         {
@@ -101,6 +137,21 @@ public class PatternLoader : MonoBehaviour
         }
 
         return result;
+    }
+
+    private static string[] ReadAllLinesShared(string path)
+    {
+        using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true))
+        {
+            List<string> lines = new List<string>();
+            while (!reader.EndOfStream)
+            {
+                lines.Add(reader.ReadLine());
+            }
+
+            return lines.ToArray();
+        }
     }
 
     private static int GetJointId(string header)

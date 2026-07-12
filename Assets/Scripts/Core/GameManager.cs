@@ -115,25 +115,32 @@ public class GameManager : MonoBehaviour
         
         SongData song = session.SelectedSong;
         session.LoadSelectedPattern();
+        if (song.time > 0.0f)
+        {
+            maxGameTime = song.time;
+        }
 
         Debug.Log($"Selected song: {song.title} / {song.author}", this);
         Debug.Log($"Music path: {song.musicPath}", this);
         Debug.Log($"Pattern path: {song.patternPath}", this);
         Debug.Log($"Loaded pattern frames: {session.SelectedPatternFrames.Length}", this);
+        Debug.Log($"Max game time: {maxGameTime:0.###}", this);
 
         if (session.SelectedPatternFrames.Length == 0)
         {
             return;
         }
 
-        for (int j = 0; j < session.SelectedPatternFrames.Length; j++)
-        {
-            PatternFrame frame = session.SelectedPatternFrames[j];
-            Debug.Log($"PatternFrame[{j}] time: {frame.time}", this);
+        PatternFrame firstFrame = session.SelectedPatternFrames[0];
+        PatternFrame lastFrame = session.SelectedPatternFrames[session.SelectedPatternFrames.Length - 1];
+        Debug.Log($"Pattern time range: {firstFrame.time:0.###} - {lastFrame.time:0.###}", this);
 
-            for (int i = 0; i < PatternFrame.JointCount; i++)
+        if (session.SelectedPatternFrames.Length <= 3)
+        {
+            for (int j = 0; j < session.SelectedPatternFrames.Length; j++)
             {
-                Debug.Log($"PatternFrame[{j}] time: {frame.time}, Joint[{i}] angle: {frame.GetAngle(i)}", this);
+                PatternFrame frame = session.SelectedPatternFrames[j];
+                Debug.Log($"PatternFrame[{j}] time: {frame.time}", this);
             }
         }
     }
