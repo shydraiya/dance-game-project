@@ -1078,6 +1078,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1198038041}
   m_SourcePrefab: {fileID: 100100000, guid: 6206c14b6fb53694cb6b0bb8a41fcb9c, type: 3}
+--- !u!114 &1966194816 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2293220565250817542, guid: e77ba8e8d466b4e48b6f3bf693f1e206, type: 3}
+  m_PrefabInstance: {fileID: 1029697398915892100}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5ca717c10100c34497fe87cd035b69b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JudgeUI
 --- !u!1 &2045359111
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,11 +1131,13 @@ MonoBehaviour:
   _badAngle: 45
   _mirrorHorizontally: 1
   _logJudgement: 0
+  judgeUI: {fileID: 1966194816}
   _lastJudge: 0
   _lastScore: 0
   _lastAverageAngle: 0
   _lastMatchedNoteTime: -1
   _lastComparedParts: 0
+  _judgeInterval: 2
 --- !u!4 &2045359113
 Transform:
   m_ObjectHideFlags: 0
@@ -1581,6 +1594,10 @@ PrefabInstance:
       propertyPath: previewRawImage
       value: 
       objectReference: {fileID: 1420529343}
+    - target: {fileID: 3995306529490878949, guid: f34cb04ba0a459b408e4549be7bcbb44, type: 3}
+      propertyPath: patternSpawnInterval
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 8808550459253931368, guid: f34cb04ba0a459b408e4549be7bcbb44, type: 3}
       propertyPath: m_Name
       value: PosePreviewStage

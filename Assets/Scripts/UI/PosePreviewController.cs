@@ -55,7 +55,7 @@ public class PosePreviewController : MonoBehaviour
     private bool spawnPatternFrames = true;
 
     [SerializeField, Min(0.01f)]
-    private float patternSpawnInterval = 0.5f;
+    private float patternSpawnInterval = 2.0f;
 
     private RenderTexture renderTexture;
 
@@ -115,7 +115,7 @@ public class PosePreviewController : MonoBehaviour
 
         if (spawnOnStart && !ShouldSpawnFromPattern())
         {
-            SpawnMannequin();
+            //SpawnMannequin();
         }
     }
 

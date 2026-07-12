@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class JudgeUI : MonoBehaviour
 {
+    /*
     public enum JudgeRank
     {
         None,
@@ -12,6 +13,7 @@ public class JudgeUI : MonoBehaviour
         Good,
         Perfect
     }
+    */
     [Header("UI")]
     [SerializeField] private Image judgeImage;
     [SerializeField] private CanvasGroup canvasGroup;
