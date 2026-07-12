@@ -17,7 +17,7 @@ public class SongSelectManager : MonoBehaviour
 
     [Tooltip("곡이 선택되면 이동할 씬의 이름")]
     [Header("Scene Flow")]
-    [SerializeField] private string gameSceneName = "Game";
+    [SerializeField] private string gameSceneName = "Pattern Test";
 
     [Header("UI References")]
     [SerializeField] private SongDescUI songDescUI;
