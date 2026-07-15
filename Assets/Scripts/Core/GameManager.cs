@@ -18,8 +18,6 @@ public class GameManager : MonoBehaviour
     [Header("# Pause Object")]
     public GameObject pausePanel;
 
-    private int patternOrder;
-
     private void Awake()
     {
         instance = this;
@@ -28,7 +26,6 @@ public class GameManager : MonoBehaviour
         instance.gameTime = 0.0f;
         instance.maxGameTime = 150.0f;
         Application.targetFrameRate = 60;
-        instance.patternOrder = 0;
     }
 
     private void Start()
