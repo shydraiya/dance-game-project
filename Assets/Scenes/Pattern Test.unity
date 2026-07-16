@@ -266,7 +266,6 @@ GameObject:
   m_Component:
   - component: {fileID: 367740263}
   - component: {fileID: 367740262}
-  - component: {fileID: 367740264}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -306,13 +305,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &367740264
+--- !u!1 &397987132
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 397987134}
+  - component: {fileID: 397987133}
+  m_Layer: 0
+  m_Name: PatternManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &397987133
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 367740261}
+  m_GameObject: {fileID: 397987132}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e86070d37616c2f4a924db84ee851563, type: 3}
@@ -320,7 +336,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PatternManager
   patternLoader: {fileID: 580299314}
   poseNoteReader: {fileID: 0}
+  patternPosePlayer: {fileID: 0}
   patternLoadLeadTime: 2
+  posePreviewController: {fileID: 0}
+--- !u!4 &397987134
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 397987132}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.00002, y: -0.00002, z: 0.00002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &580299313
 GameObject:
   m_ObjectHideFlags: 0
@@ -1606,6 +1639,7 @@ SceneRoots:
   - {fileID: 1273174939}
   - {fileID: 580299315}
   - {fileID: 367740263}
+  - {fileID: 397987134}
   - {fileID: 1575863252}
   - {fileID: 6561227978677355894}
   - {fileID: 2117525959}

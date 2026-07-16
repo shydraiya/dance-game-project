@@ -28,7 +28,9 @@ public class PatternManager : MonoBehaviour
     {
         Initialize();
     }
-
+    //Inspector에다가 이것 저것 연동시키는거 귀찮아서
+    //FindAnyObjectByType으로 다 퉁쳤음
+    //아마 이대로 써도 문제는 없을 것임
     private void Initialize()
     {
         if (patternLoader == null)
@@ -95,7 +97,7 @@ public class PatternManager : MonoBehaviour
 
         ProcessPatternLoadEvents(0.0f);
 }
-
+    
     private void Update()
     {
         if (!initialized)
@@ -123,7 +125,7 @@ public class PatternManager : MonoBehaviour
         {
             return;
         }
-
+        //여기서 패턴들 다 처리함
         ProcessPatternLoadEvents(currentGameTime);
         ProcessJudgeEvents(currentGameTime);
     }
