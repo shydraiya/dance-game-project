@@ -22,8 +22,8 @@ public class PosePreviewController : MonoBehaviour
     [SerializeField]
     private GameObject mannequinPrefab;
 
-    [SerializeField]
-    private PatternLoader patternLoader;
+    //[SerializeField]
+    //private PatternLoader patternLoader;
 
     [Header("Layer")]
     [SerializeField]
@@ -47,6 +47,7 @@ public class PosePreviewController : MonoBehaviour
     [SerializeField]
     private Vector3 mannequinLocalScale = Vector3.one;
 
+    /*
     [Header("Test")]
     [SerializeField]
     private bool spawnOnStart = true;
@@ -56,13 +57,13 @@ public class PosePreviewController : MonoBehaviour
 
     [SerializeField, Min(0.01f)]
     private float patternSpawnInterval = 2.0f;
-
+    */
     private RenderTexture renderTexture;
 
     private int previewLayer;
-    private int nextPatternFrameIndex;
-    private float lastSpawnedPatternTime = float.NegativeInfinity;
-    private float lastObservedGameTime;
+    //private int nextPatternFrameIndex;
+    //private float lastSpawnedPatternTime = float.NegativeInfinity;
+    //private float lastObservedGameTime;
 
     [Header("Movement")]
     [SerializeField, Min(0.01f)]
@@ -109,6 +110,7 @@ public class PosePreviewController : MonoBehaviour
 
     //게임 시작할 때 마네킹 나오는 건 요거 때문임
     //나중에 지우면 됨!!!!!!
+    /*
     private void Start()
     {
         ResolvePatternLoader();
@@ -118,7 +120,8 @@ public class PosePreviewController : MonoBehaviour
             //SpawnMannequin();
         }
     }
-
+    */
+    /*
     private void Update()
     {
         if (!ShouldSpawnFromPattern())
@@ -152,7 +155,7 @@ public class PosePreviewController : MonoBehaviour
             nextPatternFrameIndex++;
         }
     }
-
+    */
     //그럴 일은 없겠지만 뭔가 Inspector에서 빠지면 알려주는 디버깅용 경고 문구
     private bool ValidateReferences()
     {
@@ -248,12 +251,16 @@ public class PosePreviewController : MonoBehaviour
 
     //마네킹 생성 코드임
     //나중에 관절 각도 반영해서 추가하도록 인자 넣는거 만들어야함
+    /*
     public GameObject SpawnMannequin()
     {
         return SpawnMannequin(null);
     }
-
-    public GameObject SpawnMannequin(PatternFrame patternFrame)
+    */
+    private GameObject SpawnMannequin(
+        PatternFrame patternFrame,
+        float travelDuration
+    )
     {
         GameObject mannequin = Instantiate(
             mannequinPrefab,
@@ -282,23 +289,22 @@ public class PosePreviewController : MonoBehaviour
 
         SetLayerRecursively(mannequin, previewLayer);
         PrepareMannequin(mannequin);
-        if (patternFrame != null)
-        {
-            ApplyPatternFrame(mannequin, patternFrame);
-        }
+
+        ApplyPatternFrame(mannequin, patternFrame);
 
         StartCoroutine(
             MoveMannequinRoutine(
                 mannequinTransform,
                 startX,
                 judgeX,
-                endX
+                endX,
+                travelDuration
             )
         );
 
         return mannequin;
     }
-
+    /*
     private bool ShouldSpawnFromPattern()
     {
         ResolvePatternLoader();
@@ -320,28 +326,29 @@ public class PosePreviewController : MonoBehaviour
             patternLoader.LoadSelectedOrDefaultPattern();
         }
     }
-
+    */
     //판정선까지 정해진 시간(t초)만에 이동하도록 좀 코드가 복잡해짐
     //근데 지금 parameter 조정 잘 해놔서 왠만하면 요걸 건들일은 없을듯 (없어야 함 제발)
     private IEnumerator MoveMannequinRoutine(
         Transform mannequinTransform,
         float startX,
         float judgeX,
-        float endX
+        float endX,
+        float travelDuration
     )
     {
         float elapsedTime = 0f;
 
-        // 생성 위치에서 판정선까지 정확히 timeToJudgeLine초 동안 이동
+        // 생성 위치에서 판정선까지 남은 시간 동안 이동
         while (
             mannequinTransform != null &&
-            elapsedTime < timeToJudgeLine
+            elapsedTime < travelDuration
         )
         {
             elapsedTime += Time.deltaTime;
 
             float progress = Mathf.Clamp01(
-                elapsedTime / timeToJudgeLine
+                elapsedTime / travelDuration
             );
 
             Vector3 position =
@@ -363,18 +370,20 @@ public class PosePreviewController : MonoBehaviour
             yield break;
         }
 
-        // 프레임 오차가 남지 않도록 정확히 판정선 위치에 고정
+        // 프레임 오차가 남지 않도록 판정선 위치에 고정
         Vector3 judgePosition =
             mannequinTransform.localPosition;
 
         judgePosition.x = judgeX;
         mannequinTransform.localPosition = judgePosition;
 
-        OnMannequinReachedJudgeLine(mannequinTransform.gameObject);
+        OnMannequinReachedJudgeLine(
+            mannequinTransform.gameObject
+        );
 
-        // 판정선을 지난 후 오른쪽 화면 밖으로 이동
         elapsedTime = 0f;
 
+        // 판정선을 지난 뒤 오른쪽 화면 밖으로 이동
         while (
             mannequinTransform != null &&
             elapsedTime < exitDuration
@@ -614,4 +623,33 @@ public class PosePreviewController : MonoBehaviour
         public Vector3 RestDirection;
         public Quaternion RestRotation;
     }
+    public GameObject ShowPattern(PatternFrame patternFrame)
+    {
+        if (patternFrame == null)
+        {
+            Debug.LogError(
+                $"{nameof(PosePreviewController)}: " +
+                "출력할 PatternFrame이 null입니다.",
+                this
+            );
+
+            return null;
+        }
+
+        float travelDuration = timeToJudgeLine;
+
+        if (GameManager.instance != null)
+        {
+            // 현재 게임 시간에서 실제 판정 시간까지 남은 시간만큼 이동
+            travelDuration = patternFrame.time -
+                            GameManager.instance.gameTime;
+
+            // 이미 판정 시간이 지났거나 극단적으로 가까운 경우
+            // 0으로 나누는 문제를 방지
+            travelDuration = Mathf.Max(0.01f, travelDuration);
+        }
+
+        return SpawnMannequin(patternFrame, travelDuration);
+    }
 }
+

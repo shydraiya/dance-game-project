@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using NUnit.Framework;
 using UnityEngine;
 
 //사용 방법
 //Framse[i] 여기에 i번째 패턴 데이터가 들어있음
 //Frames[i].time = i번째 패턴 데이터의 시간 (t = 1 : 1초에서의 패턴 디자인)
 //Frames[i].GetAngle("이름") = 이름의 요구 각도 출력
+
+//Patterns[i]에는 csv에서 is_pattern = 1인 row만 들어감
+//Patterns[i]는 Frames[i]와 동일하게 사용 가능
+
 //이름 : root_position  neck	shoulder_l	shoulder_r	elbow_l	elbow_r	hip_l	hip_r	knee_l	knee_r
 //패턴 파일은 Assets/Patterns 내부에 존재
 //지금은 fileName = "pattern_sample.csv" 요렇게 넣었는데, 나중에 바꿀 필요가 있음
@@ -17,7 +22,8 @@ public class PatternLoader : MonoBehaviour
 {
     [SerializeField] private string fileName = "pattern_sample.csv";
 
-    public List<PatternFrame> Frames { get; private set; } = new List<PatternFrame>();
+    public List<PatternFrame> Frames { get; private set; }   = new List<PatternFrame>();
+    public List<PatternFrame> Patterns { get; private set; } = new List<PatternFrame>();
     public string FileName => fileName;
 
     private void Start()
@@ -25,11 +31,17 @@ public class PatternLoader : MonoBehaviour
         LoadSelectedOrDefaultPattern();
 
         Debug.Log($"Loaded Pattern Frames: {Frames.Count} ({fileName})");
+        Debug.Log($"Loaded Required Patterns: {Patterns.Count} ({fileName})");
 
         if (Frames.Count > 0)
         {
-            Debug.Log($"First frame time: {Frames[0].time}");
-            Debug.Log($"Neck angle: {Frames[0].GetAngle(PatternJoint.Neck)}");
+            //Debug.Log($"First frame time: {Frames[0].time}");
+            //Debug.Log($"Neck angle: {Frames[0].GetAngle(PatternJoint.Neck)}");
+        }
+
+        if (Patterns.Count > 0)
+        {
+            Debug.Log($"First required pattern time: {Patterns[0].time}");
         }
     }
 
@@ -47,16 +59,30 @@ public class PatternLoader : MonoBehaviour
             if (session.HasSelectedPattern)
             {
                 Frames = new List<PatternFrame>(session.SelectedPatternFrames);
+
+                List<PatternFrame> loadedPatterns;
+                LoadPattern(fileName, out loadedPatterns);
+                Patterns = loadedPatterns;
+
                 return;
             }
         }
-
-        Frames = LoadPattern(fileName);
+        List<PatternFrame> patterns;
+        Frames = LoadPattern(fileName, out patterns);
+        Patterns = patterns;
     }
 
     public static List<PatternFrame> LoadPattern(string fileName)
     {
+        List<PatternFrame> ignoredPatterns;
+        return LoadPattern(fileName, out ignoredPatterns);
+    }
+
+    public static List<PatternFrame> LoadPattern(string fileName, out List<PatternFrame> patterns)
+    {
         List<PatternFrame> result = new List<PatternFrame>();
+
+        patterns = new List<PatternFrame>();
 
         string path = Path.Combine(Application.dataPath, "Patterns", fileName);
 
@@ -98,12 +124,33 @@ public class PatternLoader : MonoBehaviour
             return result;
         }
 
+        int isPatternIndex = headers.FindIndex(
+            h => h.Equals(
+                "is_pattern",
+                StringComparison.OrdinalIgnoreCase
+            )
+        );
+
+        if (isPatternIndex == -1)
+        {
+            Debug.LogWarning(
+                "CSV does not contain an 'is_pattern' column. " +
+                "Patterns will be empty."
+            );
+        }
+
+
         for (int i = 1; i < lines.Length; i++)
         {
             if (string.IsNullOrWhiteSpace(lines[i]))
                 continue;
 
             List<string> cells = SplitCsvLine(lines[i]);
+
+            if (isPatternIndex == headers.Count - 1 && cells.Count == headers.Count - 1)
+            {
+                cells.Add(string.Empty);
+            }
 
             if (cells.Count != headers.Count)
             {
@@ -116,7 +163,7 @@ public class PatternLoader : MonoBehaviour
             frame.time = ParseFloat(cells[timeIndex]);
             for (int j = 0; j < headers.Count; j++)
             {
-                if (j == timeIndex)
+                if (j == timeIndex || j == isPatternIndex)
                     continue;
 
                 Vector3 value = ParseVector3(cells[j]);
@@ -134,6 +181,11 @@ public class PatternLoader : MonoBehaviour
             }
 
             result.Add(frame);
+
+            if (isPatternIndex >= 0 && IsPatternRow(cells[isPatternIndex]))
+            {
+                patterns.Add(frame);
+            }
         }
 
         return result;
@@ -169,6 +221,20 @@ public class PatternLoader : MonoBehaviour
             case "knee_r": return (int)PatternJoint.KneeR;
             default: return -1;
         }
+    }
+
+    private static bool IsPatternRow(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        value = value.Trim();
+        value = value.Trim('"');
+        value = value.Trim();
+
+        return value == "1";
     }
 
     private static Vector3 ParseVector3(string value)

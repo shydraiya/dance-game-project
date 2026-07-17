@@ -101,11 +101,12 @@ public class PoseNoteReader : MonoBehaviour
 
   //주의!!!!! 중간 발표용으로 만든 임시용 코드임!!!!!!!!!!!!!!
   //나중에 리팩토링 할 때 싹 날려야 함!!!!!!!!!!!!!!!!!!!!
+  /*
   [SerializeField] private float _judgeInterval = 2.0f;
 
   private float _nextJudgeTime = 2.0f;
   private float _lastObservedGameTime = float.NegativeInfinity; 
-
+  */
   //!!!!!!!!!!!!!여기까지!!!!!!!!!!!!!!!!!!!!!
 
   private readonly object _poseLock = new();
@@ -154,6 +155,7 @@ public class PoseNoteReader : MonoBehaviour
   }
   //발표용 임시 update 함수임!!!!!!!!!!!!
   //나중에 꼭 지울 것!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  /*
   private void Update()
   {
       if (GameManager.instance == null || !GameManager.instance.gamePlay)
@@ -228,7 +230,7 @@ public class PoseNoteReader : MonoBehaviour
           $"noteTime={result.noteTime:0.000}"
       );
   }
-
+  */
   /* 나중에 중간 발표 끝나면 요 코드로 되돌려야함!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   private void Update()
   {
@@ -529,5 +531,96 @@ public class PoseNoteReader : MonoBehaviour
     {
       _webCamPoseRunner = FindAnyObjectByType<WebCamPoseLandmarkerRunner>();
     }
+  }
+
+  //PatternManager가 판
+  public JudgeResult EvaluatePattern(PatternFrame pattern)
+  {
+      if (!_hasPose)
+      {
+          JudgeResult noPoseResult = new JudgeResult
+          {
+              rank = JudgeRank.None,
+              score = -1.0f,
+              averageAngle = 0.0f,
+              noteTime = pattern.time,
+              comparedParts = 0
+          };
+
+          ApplyJudgeResult(noPoseResult);
+          return noPoseResult;
+      }
+
+      if (!TryBuildCurrentPoseAngles())
+      {
+          JudgeResult invalidPoseResult = new JudgeResult
+          {
+              rank = JudgeRank.None,
+              score = -1.0f,
+              averageAngle = 0.0f,
+              noteTime = pattern.time,
+              comparedParts = 0
+          };
+
+          ApplyJudgeResult(invalidPoseResult);
+          return invalidPoseResult;
+      }
+
+      JudgeResult result = CompareWithPatternFrame(pattern);
+
+      ApplyJudgeResult(result);
+
+      return result;
+  }
+
+  private void ApplyJudgeResult(JudgeResult result)
+  {
+      LastResult = result;
+
+      _lastJudge = result.rank;
+      _lastScore = result.score;
+      _lastAverageAngle = result.averageAngle;
+      _lastMatchedNoteTime = result.noteTime;
+      _lastComparedParts = result.comparedParts;
+
+      JudgementUpdated?.Invoke(result);
+
+      if (result.rank == JudgeRank.None)
+      {
+          if (_logJudgement)
+          {
+              Debug.LogWarning(
+                  $"{nameof(PoseNoteReader)}: 포즈를 판정할 수 없습니다. " +
+                  $"patternTime={result.noteTime:0.000}",
+                  this
+              );
+          }
+
+          return;
+      }
+
+      if (judgeUI != null)
+      {
+          judgeUI.ShowJudge(result.rank);
+      }
+      else
+      {
+          Debug.LogError(
+              $"{nameof(PoseNoteReader)}: JudgeUI가 연결되지 않았습니다.",
+              this
+          );
+      }
+
+      if (_logJudgement)
+      {
+          Debug.Log(
+              $"{nameof(PoseNoteReader)} {result.rank} " +
+              $"score={result.score:0.000}, " +
+              $"averageAngle={result.averageAngle:0.0}, " +
+              $"noteTime={result.noteTime:0.000}, " +
+              $"comparedParts={result.comparedParts}",
+              this
+          );
+      }
   }
 }
