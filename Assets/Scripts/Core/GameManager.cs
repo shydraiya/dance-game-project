@@ -12,17 +12,31 @@ public class GameManager : MonoBehaviour
     public float gameTime;
     public float maxGameTime;
 
+    //게임의 점수랑 판정 개수들 관리
     [Header("# Game Info")]
     public int score;
+    public float accuracy;
+    public int judgePerfect;
+    public int judgeGood;
+    public int judgeBad;
+    public int judgeMiss;
 
     [Header("# Pause Object")]
     public GameObject pausePanel;
+
+    [Header("# UI")]
+    [SerializeField] private ResultUI resultUI;
 
     private void Awake()
     {
         instance = this;
         instance.gamePlay = true;
         instance.score = 0;
+        instance.accuracy = 0.0f;
+        instance.judgePerfect = 0;
+        instance.judgeGood = 0;
+        instance.judgeBad = 0;
+        instance.judgeMiss = 0;
         instance.gameTime = 0.0f;
         instance.maxGameTime = 150.0f;
         Application.targetFrameRate = 60;
@@ -99,7 +113,29 @@ public class GameManager : MonoBehaviour
     private IEnumerator GameVictoryRoutine()
     {
         gamePlay = false;
+
         yield return new WaitForSeconds(1.0f);
+
+        if (resultUI == null)
+        {
+            resultUI = FindAnyObjectByType<ResultUI>(
+                FindObjectsInactive.Include
+            );
+        }
+
+        if (resultUI != null)
+        {
+            resultUI.ShowResult();
+        }
+        else
+        {
+            Debug.LogError(
+                "GameManager: ResultUI를 찾을 수 없습니다.",
+                this
+            );
+        }
+
+        Time.timeScale = 0.0f;
     }
 
     // 게임씬이 로드 되면 실행되어서 패턴과 곡 정보를 불러옴  
@@ -143,5 +179,70 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"PatternFrame[{j}] time: {frame.time}", this);
             }
         }
+    }
+
+    //새로운 판정이 입력되었을 때 카운터 반영
+    //참고로 Perfect = 10000, Good = 7000, Bad = 3000, Miss = 0점 처리
+    public void ApplyJudgeResult(JudgeRank rank)
+    {
+        switch (rank)
+        {
+            case JudgeRank.Perfect:
+                score += 10000;
+                judgePerfect++;
+                break;
+
+            case JudgeRank.Good:
+                score += 7000;
+                judgeGood++;
+                break;
+
+            case JudgeRank.Bad:
+                score += 3000;
+                judgeBad++;
+                break;
+
+            case JudgeRank.Miss:
+                judgeMiss++;
+                break;
+
+            case JudgeRank.None:
+            default:
+                // 판정이 이루어지지 않은 경우에는
+                // 점수와 정확도 계산에 포함하지 않음
+                // 아마 None이 여기로 갈 건데, 카메라 끈 상황에 대한 예외처리임ㅇㅇ
+                Debug.LogWarning(
+                    $"GameManager: 유효하지 않은 판정입니다. rank={rank}",
+                    this
+                );
+                return;
+        }
+
+        UpdateAccuracy();
+    }
+
+    //정확도 업데이트 함수
+    //위와 비슷하게 각 판정은 100%, 70%, 30%, 0%의 정확도로 계산했음
+    private void UpdateAccuracy()
+    {
+        int totalJudgeCount =
+            judgePerfect +
+            judgeGood +
+            judgeBad +
+            judgeMiss;
+
+        if (totalJudgeCount <= 0)
+        {
+            accuracy = 0.0f;
+            return;
+        }
+
+        float totalAccuracyScore =
+            judgePerfect * 100.0f +
+            judgeGood * 70.0f +
+            judgeBad * 30.0f;
+
+        accuracy =
+            totalAccuracyScore / totalJudgeCount;
     }
 }
