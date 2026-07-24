@@ -214,6 +214,9 @@ public class PatternManager : MonoBehaviour
         PoseNoteReader.JudgeResult result =
             poseNoteReader.EvaluatePattern(pattern);
 
+        //판정을 기반으로 GameManager의 판정 카운터 변경
+        GameManager.instance.ApplyJudgeResult(result.rank);
+
         Debug.Log(
             $"Pattern judgment executed: " +
             $"Patterns[{patternIndex}], " +
