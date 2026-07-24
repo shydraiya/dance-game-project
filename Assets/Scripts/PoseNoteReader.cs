@@ -89,6 +89,10 @@ public class PoseNoteReader : MonoBehaviour
   [SerializeField] private float _goodAngle = 30.0f;
   [SerializeField] private float _badAngle = 45.0f;
   [SerializeField] private bool _mirrorHorizontally = true;
+  [Tooltip("MediaPipe directions -> pattern/Unity local axes. Must match HumanoidPoseDriver.")]
+  [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
+  [Tooltip("When assigned and ready, judge from the driven Humanoid bones instead of raw landmarks.")]
+  [SerializeField] private BoneRotationPoseJudge _boneRotationJudge;
   [SerializeField] private bool _logJudgement;
   [SerializeField] public JudgeUI judgeUI;
 
@@ -113,6 +117,7 @@ public class PoseNoteReader : MonoBehaviour
   private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
   private readonly float[] _latestVisibility = new float[LandmarkCount];
   private readonly Dictionary<string, Vector3> _currentPoseAngles = new();
+  private readonly Vector3[] _boneDirections = new Vector3[PatternFrame.JointCount];
 
   private bool _hasPose;
 
@@ -264,7 +269,8 @@ public class PoseNoteReader : MonoBehaviour
 
   public JudgeResult JudgeAtTime(float currentTime)
   {
-    if (!TryBuildCurrentPoseAngles())
+    if (_patternLoader == null || _patternLoader.Frames == null ||
+        !TryBuildCurrentPoseAngles())
     {
       return new JudgeResult { rank = JudgeRank.None, noteTime = -1.0f };
     }
@@ -348,6 +354,20 @@ public class PoseNoteReader : MonoBehaviour
 
   private bool TryBuildCurrentPoseAngles()
   {
+    if (_boneRotationJudge != null && _boneRotationJudge.TryGetDirections(_boneDirections))
+    {
+      _currentPoseAngles.Clear();
+      for (int i = 0; i < PatternJointKeys.Length; i++)
+      {
+        if (_boneDirections[i].sqrMagnitude > 0.000001f)
+        {
+          _currentPoseAngles[PatternJointKeys[i]] = _boneDirections[i];
+        }
+      }
+
+      return _currentPoseAngles.Count > 0;
+    }
+
     Vector3[] pose;
     float[] visibility;
 
@@ -437,7 +457,7 @@ public class PoseNoteReader : MonoBehaviour
       return;
     }
 
-    _currentPoseAngles[key] = direction.normalized;
+    _currentPoseAngles[key] = PoseJudgeMath.ToPatternSpace(direction, _landmarkScale);
   }
 
   private void TryAddDirection(string key, Vector3[] pose, float[] visibility, PoseIndex firstStart, PoseIndex secondStart, PoseIndex firstEnd, PoseIndex secondEnd)
@@ -456,7 +476,7 @@ public class PoseNoteReader : MonoBehaviour
       return;
     }
 
-    _currentPoseAngles[key] = direction.normalized;
+    _currentPoseAngles[key] = PoseJudgeMath.ToPatternSpace(direction, _landmarkScale);
   }
 
   private bool IsVisible(float[] visibility, PoseIndex index)
@@ -466,22 +486,11 @@ public class PoseNoteReader : MonoBehaviour
 
   private JudgeRank GetJudgeRank(float averageAngle)
   {
-    if (averageAngle <= _perfectAngle)
-    {
-      return JudgeRank.Perfect;
-    }
-
-    if (averageAngle <= _goodAngle)
-    {
-      return JudgeRank.Good;
-    }
-
-    if (averageAngle <= _badAngle)
-    {
-      return JudgeRank.Bad;
-    }
-
-    return JudgeRank.Miss;
+    return PoseJudgeMath.Rank(
+      averageAngle,
+      _perfectAngle,
+      _goodAngle,
+      _badAngle);
   }
 
   private int GetSourceLandmarkIndex(int targetIndex)
@@ -536,14 +545,14 @@ public class PoseNoteReader : MonoBehaviour
   //PatternManager가 판
   public JudgeResult EvaluatePattern(PatternFrame pattern)
   {
-      if (!_hasPose)
+      if (pattern == null)
       {
           JudgeResult noPoseResult = new JudgeResult
           {
               rank = JudgeRank.None,
               score = -1.0f,
               averageAngle = 0.0f,
-              noteTime = pattern.time,
+              noteTime = -1.0f,
               comparedParts = 0
           };
 
