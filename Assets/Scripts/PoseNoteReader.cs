@@ -92,7 +92,7 @@ public class PoseNoteReader : MonoBehaviour
   [Tooltip("MediaPipe directions -> pattern/Unity local axes. Must match HumanoidPoseDriver.")]
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
   [Tooltip("When assigned and ready, judge from the driven Humanoid bones instead of raw landmarks.")]
-  [SerializeField] private BoneRotationPoseJudge _boneRotationJudge;
+  //[SerializeField] private BoneRotationPoseJudge _boneRotationJudge;
   [SerializeField] private bool _logJudgement;
   [SerializeField] public JudgeUI judgeUI;
 
@@ -117,7 +117,7 @@ public class PoseNoteReader : MonoBehaviour
   private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
   private readonly float[] _latestVisibility = new float[LandmarkCount];
   private readonly Dictionary<string, Vector3> _currentPoseAngles = new();
-  private readonly Vector3[] _boneDirections = new Vector3[PatternFrame.JointCount];
+  //private readonly Vector3[] _boneDirections = new Vector3[PatternFrame.JointCount];
 
   private bool _hasPose;
 
@@ -354,7 +354,7 @@ public class PoseNoteReader : MonoBehaviour
 
   private bool TryBuildCurrentPoseAngles()
   {
-    if (_boneRotationJudge != null && _boneRotationJudge.TryGetDirections(_boneDirections))
+    /*if (_boneRotationJudge != null && _boneRotationJudge.TryGetDirections(_boneDirections))
     {
       _currentPoseAngles.Clear();
       for (int i = 0; i < PatternJointKeys.Length; i++)
@@ -366,7 +366,7 @@ public class PoseNoteReader : MonoBehaviour
       }
 
       return _currentPoseAngles.Count > 0;
-    }
+    }*/
 
     Vector3[] pose;
     float[] visibility;
