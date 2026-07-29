@@ -119,6 +119,49 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &338403789 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+  m_PrefabInstance: {fileID: 1001477289}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &338403790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338403789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7bc0148aa1a6f146972e58e171caf35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CsvBodyFramePosePlayer
+  _targetAnimator: {fileID: 338403791}
+  _disableAnimatorController: 1
+  _csvFile: {fileID: 4900000, guid: b001d0869cd56f44ca91c02d5df9c21f, type: 3}
+  _loadOnStart: 1
+  _playOnStart: 1
+  _useGameManagerTime: 1
+  _loop: 1
+  _playbackSmoothing: 18
+  _normalizeBoneVectors: 1
+  _applyRootPosition: 1
+  _rootPositionScale: {x: 1, y: 1, z: 1}
+  _rootPositionOffset: {x: 0, y: 0, z: 0}
+  _applyRootRotation: 1
+  _applyChestRotation: 1
+  _rootRotationBone: 0
+  _chestRotationBone: 54
+  _isLoaded: 0
+  _isPlaying: 0
+  _frameCount: 0
+  _cursor: 0
+  _status: Not loaded
+--- !u!95 &338403791 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2389976860554688134, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+  m_PrefabInstance: {fileID: 1001477289}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &517964143
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,7 +313,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -1.29
       objectReference: {fileID: 0}
     - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
       propertyPath: m_LocalPosition.y
@@ -310,7 +353,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
       propertyPath: m_Name
-      value: Dance Avatar_L
+      value: Dance Avatar_N
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1008097048199911374, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
@@ -319,7 +362,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 877234869}
+      addedObject: {fileID: 877234871}
   m_SourcePrefab: {fileID: 100100000, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
 --- !u!1 &877234867 stripped
 GameObject:
@@ -331,7 +374,7 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 2389976860554688134, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
   m_PrefabInstance: {fileID: 877234866}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &877234869
+--- !u!114 &877234871
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -345,7 +388,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CsvPatternPosePlayer
   _targetAnimator: {fileID: 877234868}
   _disableAnimatorController: 1
-  _csvFile: {fileID: 4900000, guid: 7fae140805510a94799631695e5fd644, type: 3}
+  _csvFile: {fileID: 4900000, guid: de3242a92600a074281728ab28e1934d, type: 3}
   _loadOnStart: 1
   _playOnStart: 1
   _useGameManagerTime: 1
@@ -487,6 +530,71 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &1001477289
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1008097048199911374, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: _disableAnimatorController
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.497
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 8631935516477893884, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      propertyPath: m_Name
+      value: Dance Avatar_BodyFrame
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 1008097048199911374, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8971481837969765958, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 338403790}
+  m_SourcePrefab: {fileID: 100100000, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -494,3 +602,4 @@ SceneRoots:
   - {fileID: 517964146}
   - {fileID: 939384886}
   - {fileID: 877234866}
+  - {fileID: 1001477289}
