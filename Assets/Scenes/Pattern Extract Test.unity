@@ -138,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CsvBodyFramePosePlayer
   _targetAnimator: {fileID: 338403791}
   _disableAnimatorController: 1
-  _csvFile: {fileID: 4900000, guid: b001d0869cd56f44ca91c02d5df9c21f, type: 3}
+  _csvFile: {fileID: 4900000, guid: 38b130f6ea138144ea692d65f26f4e85, type: 3}
   _loadOnStart: 1
   _playOnStart: 1
   _useGameManagerTime: 1
@@ -388,7 +388,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CsvPatternPosePlayer
   _targetAnimator: {fileID: 877234868}
   _disableAnimatorController: 1
-  _csvFile: {fileID: 4900000, guid: de3242a92600a074281728ab28e1934d, type: 3}
+  _csvFile: {fileID: 4900000, guid: eb2d85438a7d14543a8631d3f302b97c, type: 3}
   _loadOnStart: 1
   _playOnStart: 1
   _useGameManagerTime: 1
