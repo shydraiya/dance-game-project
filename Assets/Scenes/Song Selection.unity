@@ -702,7 +702,7 @@ MonoBehaviour:
   songDataCsv: {fileID: 4900000, guid: 666cf5e16d50d2f48998adae5a6486d0, type: 3}
   initialSelectedIndex: 0
   loopSongList: 1
-  gameSceneName: Pattern Test
+  gameSceneName: Music Test
   songDescUI: {fileID: 1235693306}
   songListContent: {fileID: 1156948574}
   songRowPrefab: {fileID: 1376292244201016305, guid: 9e5a8a1baaadd264289300f4e5efe75d, type: 3}
@@ -834,6 +834,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e095b7d06b2545239b4067dc8ee8aa57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SongSessionController
+  _selectedSong:
+    no: 0
+    title: 
+    author: 
+    time: 0
+    difficulty: 0
+    musicPath: 
+    patternPath: 
+  _loadedPatternFrameCount: 0
+  _patternTimeRange: No pattern loaded
+  _sessionStatus: No song selected
 --- !u!4 &1359305536
 Transform:
   m_ObjectHideFlags: 0
