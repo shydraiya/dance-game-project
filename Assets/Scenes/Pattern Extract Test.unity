@@ -157,6 +157,13 @@ MonoBehaviour:
   _frameCount: 0
   _cursor: 0
   _status: Not loaded
+  _initialRootLocalPosition: {x: 0, y: 0, z: 0}
+  _rootRotationTransform: {fileID: 0}
+  _chestRotationTransform: {fileID: 0}
+  _rootRestRotation: {x: 0, y: 0, z: 0, w: 0}
+  _chestRestRotation: {x: 0, y: 0, z: 0, w: 0}
+  _localPlaybackTime: 0
+  _lastAppliedTime: -1
 --- !u!95 &338403791 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 2389976860554688134, guid: 34e1bfe315ec24a4cbcc1f59aa3c0a7b, type: 3}
@@ -403,6 +410,10 @@ MonoBehaviour:
   _frameCount: 0
   _cursor: 0
   _status: Not loaded
+  _frames: []
+  _initialRootLocalPosition: {x: 0, y: 0, z: 0}
+  _localPlaybackTime: 0
+  _lastAppliedTime: -1
 --- !u!1 &939384884
 GameObject:
   m_ObjectHideFlags: 0
