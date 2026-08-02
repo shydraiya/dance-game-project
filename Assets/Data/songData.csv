@@ -1,7 +1,7 @@
 no,title,author,time,difficulty,musicPath,patternPath
 1,LoveAttack,RESCENE,75,15,LoveAttack_RESCENE.wav,LOVE_ATTACK_RESCENE_pattern_r.csv
 2,Billie Jean,∏∂¿Ã≈¨¿ËΩº,120,15,BillieJean.wav,BillieJean.csv
-3,Heliocentrism,EYEN,130,15,,dance03.csv
+3,Celebrity,IU,60,15,IU_Celebrity_pattern_preview.wav,IU_Celebrity_body_frames_patterned5.csv
 4,DIE IN,TAK X Sobrem,120,15,,dance04.csv
 5,Nightmare,M2U,120,15,,dance05.csv
 6,Sleipnir,Xeon X 7SEQ,120,15,,dance06.csv
