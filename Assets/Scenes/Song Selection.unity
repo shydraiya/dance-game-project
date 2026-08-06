@@ -834,6 +834,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e095b7d06b2545239b4067dc8ee8aa57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SongSessionController
+  _selectedSong:
+    no: 0
+    title: 
+    author: 
+    time: 0
+    difficulty: 0
+    musicPath: 
+    patternPath: 
+  _loadedPatternFrameCount: 0
+  _patternTimeRange: No pattern loaded
+  _sessionStatus: No song selected
 --- !u!4 &1359305536
 Transform:
   m_ObjectHideFlags: 0

@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Reader Test.unity
     guid: b7ed5c1d578db654a8926bbac3efa6ac
+  - enabled: 1
+    path: Assets/Scenes/Music Test.unity
+    guid: f990059f1e4abe948a0381fb5383ae22
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
