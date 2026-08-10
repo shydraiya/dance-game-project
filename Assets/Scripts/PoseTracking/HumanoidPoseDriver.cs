@@ -239,6 +239,16 @@ public class HumanoidPoseDriver : MonoBehaviour
     _driveLegs = driveLegs;
   }
 
+  public void SetTargetAvatar(Animator targetAnimator, Transform modelRoot = null)
+  {
+    _targetAnimator = targetAnimator;
+    _modelRoot = modelRoot != null
+      ? modelRoot
+      : (_targetAnimator != null ? _targetAnimator.transform : transform);
+    _isCalibrated = false;
+    CacheHumanoidBones();
+  }
+
   public void SetInvertXCoordinate(bool invertXCoordinate)
   {
     _invertXCoordinate = invertXCoordinate;
