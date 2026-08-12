@@ -27,6 +27,12 @@ public class GameManager : MonoBehaviour
     [Header("# UI")]
     [SerializeField] private ResultUI resultUI;
 
+    [Header("# Scene Transition")]
+    [SerializeField] private string songSelectionSceneName = "Song Selection";
+
+    private bool gameFinished;
+    private bool resultDisplayed;
+
     private void Awake()
     {
         instance = this;
@@ -86,6 +92,16 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (resultDisplayed)
+        {
+            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+            {
+                ReturnToSongSelection();
+            }
+
+            return;
+        }
+
         if (!gamePlay)
         {
             return;
@@ -107,12 +123,19 @@ public class GameManager : MonoBehaviour
 
     public void GameVictory()
     {
+        if (gameFinished)
+        {
+            return;
+        }
+
+        gameFinished = true;
         StartCoroutine(GameVictoryRoutine());
     }
 
     private IEnumerator GameVictoryRoutine()
     {
         gamePlay = false;
+        SaveGameResult();
 
         yield return new WaitForSeconds(1.0f);
 
@@ -126,6 +149,7 @@ public class GameManager : MonoBehaviour
         if (resultUI != null)
         {
             resultUI.ShowResult();
+            resultDisplayed = true;
         }
         else
         {
@@ -136,6 +160,40 @@ public class GameManager : MonoBehaviour
         }
 
         Time.timeScale = 0.0f;
+    }
+
+    private void ReturnToSongSelection()
+    {
+        resultDisplayed = false;
+        Time.timeScale = 1.0f;
+        SceneManager.LoadScene(songSelectionSceneName);
+    }
+
+    private void SaveGameResult()
+    {
+        SongSessionController session = SongSessionController.Instance;
+
+        if (session == null || !session.HasSelectedSong)
+        {
+            Debug.LogWarning("GameManager: Cannot save a result without a selected song.", this);
+            return;
+        }
+
+        GameResult result = new GameResult
+        {
+            songId = session.SelectedSong.no,
+            score = score,
+            accuracy = accuracy,
+            perfect = judgePerfect,
+            good = judgeGood,
+            bad = judgeBad,
+            miss = judgeMiss
+        };
+
+        if (!GameRecordRepository.SaveResult(result))
+        {
+            Debug.LogError("GameManager: Failed to save the game result.", this);
+        }
     }
 
     // 게임씬이 로드 되면 실행되어서 패턴과 곡 정보를 불러옴  

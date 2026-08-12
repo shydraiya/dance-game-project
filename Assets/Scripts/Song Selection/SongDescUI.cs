@@ -17,12 +17,37 @@ public class SongDescUI : MonoBehaviour
         if (song == null)
             return;
 
-        //jacketImage.sprite = song.jacket;
+        if (jacketImage == null)
+        {
+            Transform imageTransform = transform.Find("SongDesc_Image");
+            if (imageTransform != null)
+            {
+                jacketImage = imageTransform.GetComponent<Image>();
+            }
+        }
+
+        Sprite coverSprite = string.IsNullOrWhiteSpace(song.coverPath)
+            ? null
+            : Resources.Load<Sprite>(song.coverPath);
+
+        if (jacketImage != null)
+        {
+            jacketImage.sprite = coverSprite;
+            jacketImage.enabled = coverSprite != null;
+            jacketImage.preserveAspect = true;
+        }
+
+        if (coverSprite == null && !string.IsNullOrWhiteSpace(song.coverPath))
+        {
+            Debug.LogWarning($"SongDescUI: Cover image not found at Resources/{song.coverPath}", this);
+        }
 
         titleText.text      = song.title;
         authorText.text     = song.author;
         difficultyText.text = $"★ {song.difficulty}";
-        bestScoreText.text  = $"Score 1000000";
+        SongRecord record = GameRecordRepository.GetRecord(song.no);
+        int highScore = record != null ? record.highScore : 0;
+        bestScoreText.text = $"Score : {highScore}";
         //bestScoreText.text = $"최고 기록 : {song.bestScore}";
     }
 }
