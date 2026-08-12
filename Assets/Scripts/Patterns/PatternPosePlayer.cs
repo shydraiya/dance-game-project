@@ -131,6 +131,24 @@ public class PatternPosePlayer : MonoBehaviour
         Load(session.SelectedPatternFrames);
     }
 
+    public void SetTargetAnimator(Animator targetAnimator, bool reloadFromSongSession = true)
+    {
+        _targetAnimator = targetAnimator;
+        _isLoaded = false;
+        _segments.Clear();
+
+        if (!reloadFromSongSession)
+        {
+            return;
+        }
+
+        SongSessionController session = SongSessionController.Instance;
+        if (session != null && session.HasSelectedPattern)
+        {
+            Load(session.SelectedPatternFrames);
+        }
+    }
+
     public void ApplyAtTime(float time)
     {
         if (!_isLoaded || _frames.Length == 0)
