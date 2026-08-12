@@ -20,6 +20,8 @@ public class MusicController : MonoBehaviour
         }
 
         audioSource.loop = loop;
+
+        audioSource.volume = MusicVolumeSettings.LoadVolume();
     }
 
     private void Start()

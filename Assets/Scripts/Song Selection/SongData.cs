@@ -15,6 +15,7 @@ public class SongData
 
     public string musicPath;
     public string patternPath;
+    public string coverPath;
 
     // Pattern Test presentation metadata.
     public string backgroundPath;
