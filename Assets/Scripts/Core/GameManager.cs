@@ -26,9 +26,13 @@ public class GameManager : MonoBehaviour
 
     [Header("# UI")]
     [SerializeField] private ResultUI resultUI;
+    [SerializeField] private ResumeCountdownUI resumeCountdown;
 
     [Header("# Scene Transition")]
     [SerializeField] private string songSelectionSceneName = "Song Selection";
+
+    [Header("# Audio")]
+    [SerializeField] private MusicController musicController;
 
     private bool gameFinished;
     private bool resultDisplayed;
@@ -51,6 +55,10 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         LoadSelectedSongPattern();
+        if (musicController == null)
+        {
+            musicController = FindAnyObjectByType<MusicController>();
+        }
     }
 
     public void GameStop()
@@ -62,9 +70,50 @@ public class GameManager : MonoBehaviour
             pausePanel.SetActive(true);
         }
 
-        Time.timeScale = 0;
+        if (musicController != null)
+        {
+            musicController.PauseMusic();
+        }
+
+        Time.timeScale = 0.0f;
     }
 
+    public void GameResume()
+    {
+        if (pausePanel != null)
+        {
+            pausePanel.SetActive(false);
+        }
+
+        if (resumeCountdown != null)
+        {
+            resumeCountdown.PlayCountdown(FinishResume);
+        }
+        else
+        {
+            FinishResume();
+        }
+    }
+
+    public void GameExit()
+    {
+        Time.timeScale = 1.0f;
+        SceneManager.LoadScene(songSelectionSceneName);
+    }
+
+    private void FinishResume()
+    {
+        Time.timeScale = 1.0f;
+        gamePlay = true;
+
+        if (musicController != null)
+        {
+            musicController.ResumeMusic();
+        }
+    }
+
+
+/*
     public void GameResume()
     {
         StartCoroutine(GameResumeRoutine());
@@ -82,8 +131,13 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(1f);
         gamePlay = true;
         Time.timeScale = 1;
-    }
 
+        if (musicController != null)
+        {
+            musicController.ResumeMusic();
+        }
+    }
+*/
     public void GameRetry()
     {
         Time.timeScale = 1f;
@@ -157,6 +211,11 @@ public class GameManager : MonoBehaviour
                 "GameManager: ResultUI를 찾을 수 없습니다.",
                 this
             );
+        }
+
+        if (musicController != null)
+        {
+            musicController.PauseMusic();
         }
 
         Time.timeScale = 0.0f;

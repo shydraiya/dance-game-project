@@ -126,4 +126,19 @@ public class MusicController : MonoBehaviour
                 return AudioType.UNKNOWN;
         }
     }
+    public void PauseMusic()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Pause();
+        }
+    }
+
+    public void ResumeMusic()
+    {
+        if (audioSource != null)
+        {
+            audioSource.UnPause();
+        }
+    }
 }
