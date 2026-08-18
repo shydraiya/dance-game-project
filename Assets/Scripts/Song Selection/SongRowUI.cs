@@ -13,6 +13,7 @@ public class SongRowUI : MonoBehaviour
     [Header("Legacy UI Text")]
     [SerializeField] private Text titleText;
     [SerializeField] private Text difficultyText;
+    [SerializeField] private Text rankText;
 
     [SerializeField] private GameObject selectedFrame;
 
@@ -38,13 +39,17 @@ public class SongRowUI : MonoBehaviour
         {
             titleText.text = "";
             difficultyText.text = "";
+            rankText.text = "";
             return;
         }
 
         //현재 클리어 성과도 추가해야함
         //X는 현재 플레이 기록 없음을 의미
         titleText.text = song.title;
-        difficultyText.text = $"★{song.difficulty} X";
+        difficultyText.text = $"★{song.difficulty}";
+
+        SongRecord record = GameRecordRepository.GetRecord(song.no);
+        rankText.text = GetRankText(record);
     }
 
     public void SetSelected(bool selected)
@@ -70,5 +75,22 @@ public class SongRowUI : MonoBehaviour
         canvasGroup.alpha = alpha;
         canvasGroup.blocksRaycasts = alpha > 0.01f;
         canvasGroup.interactable = alpha > 0.01f;
+    }
+
+    private string GetRankText(SongRecord record)
+    {
+        if (record == null || record.highScore <= 0)
+            return "X";
+    
+        if (record.highScore >= 950000)
+            return "S";
+        if (record.highScore >= 900000)
+            return "A";
+        if (record.highScore >= 800000)
+            return "B";
+        if (record.highScore >= 700000)
+            return "C";
+    
+        return "D";
     }
 }
