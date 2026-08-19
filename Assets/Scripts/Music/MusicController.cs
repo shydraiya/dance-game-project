@@ -26,7 +26,7 @@ public class MusicController : MonoBehaviour
 
     private void Start()
     {
-        if (playOnStart)
+        if (playOnStart && (GameManager.instance == null || GameManager.instance.gamePlay))
         {
             PlayFromSongSession();
         }

@@ -36,11 +36,12 @@ public class GameManager : MonoBehaviour
 
     private bool gameFinished;
     private bool resultDisplayed;
+    private bool initialCountdownStarted;
 
     private void Awake()
     {
         instance = this;
-        instance.gamePlay = true;
+        instance.gamePlay = false;
         instance.score = 0;
         instance.accuracy = 0.0f;
         instance.judgePerfect = 0;
@@ -92,6 +93,43 @@ public class GameManager : MonoBehaviour
         else
         {
             FinishResume();
+        }
+    }
+
+    public void BeginInitialCountdown()
+    {
+        if (initialCountdownStarted || gameFinished)
+        {
+            return;
+        }
+
+        initialCountdownStarted = true;
+        gamePlay = false;
+
+        if (musicController == null)
+        {
+            musicController = FindAnyObjectByType<MusicController>();
+        }
+
+        if (resumeCountdown != null)
+        {
+            resumeCountdown.PlayCountdown(FinishInitialStart);
+        }
+        else
+        {
+            FinishInitialStart();
+        }
+    }
+
+    private void FinishInitialStart()
+    {
+        Time.timeScale = 1.0f;
+        gameTime = 0.0f;
+        gamePlay = true;
+
+        if (musicController != null)
+        {
+            musicController.PlayFromSongSession();
         }
     }
 
