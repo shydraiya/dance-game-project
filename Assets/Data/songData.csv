@@ -3,8 +3,8 @@
 2,Billie Jean,마이클잭슨,120,15,BillieJean.wav,BillieJean.csv,Data/IMG/michael-jackson-thriller,stagebackground_1.png,PatternTest/Avatars/SantaClaus
 3,Celebrity,IU,60,15,IU_Celebrity_pattern_preview.wav,IU_Celebrity_body_frames_patterned5.csv,Data/IMG/IU_Celebrity_album_cover,,
 4,Celebrity,IU,60,15,IU_Celebrity_pattern_preview.wav,IU_Celebrity_body_frames_patterned_hand.csv,,,
-5,Nightmare,M2U,120,15,,dance05.csv,,,
-6,Sleipnir,Xeon X 7SEQ,120,15,,dance06.csv,,,
+5,YMCA,0,120,15,YMCA.wav,YMCA.csv,,,
+6,x_test,Xeon X 7SEQ,30,15,,x_axis_left_right_raise_test.csv,,,
 7,#1f1e33,Camellia,110,15,,dance01.csv,,,
 8,A,A,10,14,,dance02.csv,,,
 9,B,B,20,13,,dance03.csv,,,

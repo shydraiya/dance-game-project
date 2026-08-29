@@ -33,6 +33,9 @@ public class HumanoidPoseDriver : MonoBehaviour
   [SerializeField] private Vector3 _rootPositionScale = new Vector3(1.0f, 1.0f, 1.0f);
   [SerializeField] private Vector3 _rootPositionOffset;
 
+  [Header("Startup Guard")]
+  [SerializeField] private bool _ignorePoseInput;
+
   [Header("Debug")]
   [SerializeField] private bool _logMissingReferences = true;
   [SerializeField] private bool _logStatus;
@@ -154,6 +157,11 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private void LateUpdate()
   {
+    if (_ignorePoseInput)
+    {
+      return;
+    }
+
     ConsumePendingPose();
 
     if (_drivenBoneCount == 0 && _targetAnimator != null)
@@ -265,6 +273,27 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
   }
 
+  public void SetPoseInputBlocked(bool blocked, bool resetPoseState = true)
+  {
+    _ignorePoseInput = blocked;
+    if (!resetPoseState)
+    {
+      UpdateStatus();
+      return;
+    }
+
+    lock (_poseLock)
+    {
+      _hasPendingPose = false;
+      _hasPose = false;
+      _hasPendingScreenPelvis = false;
+      _hasScreenPelvis = false;
+    }
+
+    _isCalibrated = false;
+    UpdateStatus();
+  }
+
   public void ApplyPoseLandmarkerResult(PoseLandmarkerResult result)
   {
     OnPoseLandmarksUpdated(result);
@@ -272,6 +301,11 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
   {
+    if (_ignorePoseInput)
+    {
+      return;
+    }
+
     var normalizedPose = result.poseLandmarks;
     var hasNormalizedPose = normalizedPose != null && normalizedPose.Count > 0 &&
       normalizedPose[0].landmarks != null && normalizedPose[0].landmarks.Count >= LandmarkCount;
@@ -674,6 +708,10 @@ public class HumanoidPoseDriver : MonoBehaviour
     else if (_poseRunner == null)
     {
       _status = "Pose Runner is missing";
+    }
+    else if (_ignorePoseInput)
+    {
+      _status = "Pose input is blocked";
     }
     else if (_drivenBoneCount == 0)
     {

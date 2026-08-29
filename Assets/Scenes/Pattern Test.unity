@@ -1738,7 +1738,8 @@ MonoBehaviour:
   _perfectAngle: 15
   _goodAngle: 30
   _badAngle: 45
-  _mirrorHorizontally: 1
+  _mirrorHorizontally: 0
+  _invertXCoordinate: 1
   _landmarkScale: {x: 1, y: -1, z: -1}
   _logJudgement: 0
   judgeUI: {fileID: 1966194816}
