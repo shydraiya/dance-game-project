@@ -88,7 +88,10 @@ public class PoseNoteReader : MonoBehaviour
   [SerializeField] private float _perfectAngle = 15.0f;
   [SerializeField] private float _goodAngle = 30.0f;
   [SerializeField] private float _badAngle = 45.0f;
+  [Tooltip("Swap incoming MediaPipe left/right labels without flipping the pose coordinates. Enable this when the solution labels your right side as left.")]
   [SerializeField] private bool _mirrorHorizontally = true;
+  [Tooltip("Invert only the incoming landmark X coordinate after centering. This flips the pose coordinates without swapping left/right labels.")]
+  [SerializeField] private bool _invertXCoordinate;
   [Tooltip("MediaPipe directions -> pattern/Unity local axes. Must match HumanoidPoseDriver.")]
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
   [Tooltip("When assigned and ready, judge from the driven Humanoid bones instead of raw landmarks.")]
@@ -329,7 +332,7 @@ public class PoseNoteReader : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _latestPose[i] = new Vector3(landmark.x, landmark.y, landmark.z);
+        _latestPose[i] = new Vector3(GetMappedX(landmark.x), landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _latestVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
@@ -344,7 +347,7 @@ public class PoseNoteReader : MonoBehaviour
       for (var i = 0; i < LandmarkCount; i++)
       {
         var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _latestPose[i] = new Vector3(landmark.x - 0.5f, landmark.y - 0.5f, landmark.z);
+        _latestPose[i] = new Vector3(GetMappedX(landmark.x - 0.5f), (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
         _latestVisibility[i] = landmark.visibility ?? 1.0f;
       }
 
@@ -457,7 +460,7 @@ public class PoseNoteReader : MonoBehaviour
       return;
     }
 
-    _currentPoseAngles[key] = PoseJudgeMath.ToPatternSpace(direction, _landmarkScale);
+    _currentPoseAngles[key] = NormalizeDirection(direction);
   }
 
   private void TryAddDirection(string key, Vector3[] pose, float[] visibility, PoseIndex firstStart, PoseIndex secondStart, PoseIndex firstEnd, PoseIndex secondEnd)
@@ -476,7 +479,17 @@ public class PoseNoteReader : MonoBehaviour
       return;
     }
 
-    _currentPoseAngles[key] = PoseJudgeMath.ToPatternSpace(direction, _landmarkScale);
+    _currentPoseAngles[key] = NormalizeDirection(direction);
+  }
+
+  private float GetMappedX(float centeredX)
+  {
+    return centeredX * (_invertXCoordinate ? -_landmarkScale.x : _landmarkScale.x);
+  }
+
+  private static Vector3 NormalizeDirection(Vector3 direction)
+  {
+    return direction.sqrMagnitude > 0.000001f ? direction.normalized : Vector3.zero;
   }
 
   private bool IsVisible(float[] visibility, PoseIndex index)
