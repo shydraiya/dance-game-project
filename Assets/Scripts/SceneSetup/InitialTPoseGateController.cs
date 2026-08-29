@@ -11,17 +11,21 @@ public sealed class InitialTPoseGateController : MonoBehaviour
 {
     private const string PatternTestSceneName = "Pattern Test";
     private const int RequiredLandmarkCount = 29;
+    private const float InitialGraceSeconds = 3.0f;
     private const float RequiredHoldSeconds = 0.6f;
     private const float SuccessDisplaySeconds = 0.5f;
 
     private PoseLandmarkerRunner _poseRunner;
+    private HumanoidPoseDriver _poseDriver;
     private GameManager _gameManager;
     private Canvas _canvas;
     private RectTransform _silhouette;
     private Text _guideText;
     private Image[] _parts;
     private bool _latestPoseMatches;
+    private bool _graceCompleted;
     private bool _completed;
+    private float _graceStartedAt;
     private float _matchingSince = -1f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -52,6 +56,13 @@ public sealed class InitialTPoseGateController : MonoBehaviour
         }
 
         CreateOverlay();
+        _graceStartedAt = Time.realtimeSinceStartup;
+        SetGuideText($"준비하세요... {Mathf.CeilToInt(InitialGraceSeconds)}");
+        _poseDriver = FindAnyObjectByType<HumanoidPoseDriver>();
+        if (_poseDriver != null)
+        {
+            _poseDriver.SetPoseInputBlocked(true);
+        }
 
         float timeoutAt = Time.realtimeSinceStartup + 15f;
         while (_poseRunner == null && Time.realtimeSinceStartup < timeoutAt)
@@ -74,6 +85,28 @@ public sealed class InitialTPoseGateController : MonoBehaviour
         if (_completed)
         {
             return;
+        }
+
+        if (!_graceCompleted)
+        {
+            float remaining = InitialGraceSeconds - (Time.realtimeSinceStartup - _graceStartedAt);
+            if (remaining > 0f)
+            {
+                SetGuideText($"준비하세요... {Mathf.CeilToInt(remaining)}");
+                SetSilhouetteColor(new Color(1f, 1f, 1f, 0.32f));
+                return;
+            }
+
+            _graceCompleted = true;
+            _latestPoseMatches = false;
+            _matchingSince = -1f;
+            if (_poseDriver == null)
+            {
+                _poseDriver = FindAnyObjectByType<HumanoidPoseDriver>();
+            }
+            _poseDriver?.SetPoseInputBlocked(false);
+            _poseDriver?.Recalibrate();
+            SetGuideText("화면 중앙에서 T 포즈를 취해 주세요");
         }
 
         if (!_latestPoseMatches)
@@ -104,6 +137,11 @@ public sealed class InitialTPoseGateController : MonoBehaviour
 
     private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
     {
+        if (!_graceCompleted)
+        {
+            return;
+        }
+
         var poses = result.poseLandmarks;
         if (poses == null || poses.Count == 0 || poses[0].landmarks == null ||
             poses[0].landmarks.Count < RequiredLandmarkCount)
@@ -258,11 +296,23 @@ public sealed class InitialTPoseGateController : MonoBehaviour
         }
     }
 
+    private void SetGuideText(string text)
+    {
+        if (_guideText != null)
+        {
+            _guideText.text = text;
+        }
+    }
+
     private void OnDestroy()
     {
         if (_poseRunner != null)
         {
             _poseRunner.PoseLandmarksUpdated -= OnPoseLandmarksUpdated;
+        }
+        if (_poseDriver != null && !_completed)
+        {
+            _poseDriver.SetPoseInputBlocked(false, false);
         }
     }
 }
