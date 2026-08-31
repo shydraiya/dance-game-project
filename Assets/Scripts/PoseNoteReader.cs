@@ -607,6 +607,17 @@ public class PoseNoteReader : MonoBehaviour
 
       JudgementUpdated?.Invoke(result);
 
+      if (CameraDebugOverlayController.IsDebugEnabled)
+      {
+          Debug.Log(
+              $"[Camera Debug] 판정={result.rank}, " +
+              $"판정 입력={GetJudgementInputDescription()}, " +
+              $"아바타 출력={CameraDebugOverlayController.GetAvatarOutputMode()}, " +
+              $"patternTime={result.noteTime:0.000}",
+              this
+          );
+      }
+
       if (result.rank == JudgeRank.None)
       {
           if (_logJudgement)
@@ -644,5 +655,26 @@ public class PoseNoteReader : MonoBehaviour
               this
           );
       }
+  }
+
+  private string GetJudgementInputDescription()
+  {
+      if (_poseRunner != null)
+      {
+          return Mediapipe.Unity.Sample.ImageSourceProvider.CurrentSourceType ==
+                 global::ImageSourceType.WebCamera
+              ? "Webcam"
+              : Mediapipe.Unity.Sample.ImageSourceProvider.CurrentSourceType.ToString();
+      }
+
+      if (_webCamPoseRunner != null)
+      {
+          string sourceName = _webCamPoseRunner.SourceName;
+          return string.IsNullOrEmpty(sourceName)
+              ? "DroidCam/WebCam runner"
+              : sourceName;
+      }
+
+      return "입력 없음";
   }
 }
