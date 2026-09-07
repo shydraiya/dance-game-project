@@ -250,6 +250,29 @@ public class HumanoidPoseDriver : MonoBehaviour
     _driveLegs = driveLegs;
   }
 
+  public void CopyDrivingConfigurationFrom(HumanoidPoseDriver source)
+  {
+    if (source == null)
+    {
+      return;
+    }
+
+    _driveRootPosition = source._driveRootPosition;
+    _driveTorso = source._driveTorso;
+    _driveHead = source._driveHead;
+    _driveArms = source._driveArms;
+    _driveLegs = source._driveLegs;
+    _rotationSmoothing = source._rotationSmoothing;
+    _positionSmoothing = source._positionSmoothing;
+    _minimumVisibility = source._minimumVisibility;
+    _mirrorHorizontally = source._mirrorHorizontally;
+    _invertXCoordinate = source._invertXCoordinate;
+    _landmarkScale = source._landmarkScale;
+    _rootPositionScale = source._rootPositionScale;
+    _rootPositionOffset = source._rootPositionOffset;
+    Recalibrate();
+  }
+
   public void SetTargetAvatar(Animator targetAnimator, Transform modelRoot = null)
   {
     _targetAnimator = targetAnimator;

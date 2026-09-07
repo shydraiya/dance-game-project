@@ -20,6 +20,7 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   [SerializeField, Range(0.0f, 1.0f)] private float _droidCamWeight = 0.1f;
   [SerializeField, Range(0.0f, 1.0f)] private float _droidVisibilityThreshold = 0.5f;
   [SerializeField] private bool _alignDroidToWebCamTorso = true;
+  [SerializeField, Min(0.1f)] private float _droidPoseMaxAgeSeconds = 0.5f;
 
   [Header("Driving")]
   [SerializeField] private bool _driveRootPosition = true;
@@ -50,7 +51,11 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   private bool _hasWebCamPose;
   private bool _hasDroidPose;
   private bool _hasMergedPose;
+  private bool _isUsingAnyDroidJoint;
+  private bool _hasDroidAlignment;
   private bool _isCalibrated;
+  private long _lastDroidPoseUtcTicks;
+  private Quaternion _lastDroidAlignment = Quaternion.identity;
   private Vector3 _calibratedPelvisCenter;
   private Vector3 _calibratedRootLocalPosition;
   private Quaternion _calibratedRootRotation = Quaternion.identity;
@@ -59,7 +64,16 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   private OrientationCalibration _chestOrientation;
   private OrientationCalibration _headOrientation;
 
-  public bool IsUsingDroidPose => _hasDroidPose && HasReliableDroidPose();
+  public bool IsUsingDroidPose
+  {
+    get
+    {
+      lock (_poseLock)
+      {
+        return _isUsingAnyDroidJoint;
+      }
+    }
+  }
 
   private enum PoseIndex
   {
@@ -203,6 +217,40 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   public void ApplyDroidCamPose(PoseLandmarkerResult result)
   {
     CopyPose(result, _droidPose, _droidVisibility, out _hasDroidPose);
+    lock (_poseLock)
+    {
+      if (_hasDroidPose)
+      {
+        _lastDroidPoseUtcTicks = DateTime.UtcNow.Ticks;
+      }
+    }
+  }
+
+  public bool TryCopyMergedPose(Vector3[] targetPose, float[] targetVisibility, out bool usedDroidPose)
+  {
+    usedDroidPose = false;
+    if (targetPose == null || targetVisibility == null ||
+        targetPose.Length < LandmarkCount || targetVisibility.Length < LandmarkCount)
+    {
+      return false;
+    }
+
+    // PatternManager judges during Update, before this component's LateUpdate.
+    // Refresh here so the judge reads the newest available camera frames.
+    MergeLatestPoses();
+
+    lock (_poseLock)
+    {
+      if (!_hasMergedPose)
+      {
+        return false;
+      }
+
+      Array.Copy(_mergedPose, targetPose, LandmarkCount);
+      Array.Copy(_mergedVisibility, targetVisibility, LandmarkCount);
+      usedDroidPose = _isUsingAnyDroidJoint;
+      return true;
+    }
   }
 
   private void Subscribe()
@@ -281,55 +329,55 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
       if (!_hasWebCamPose)
       {
         _hasMergedPose = false;
+        _isUsingAnyDroidJoint = false;
         return;
       }
 
-      var useDroidPose = _hasDroidPose && HasReliableDroidPose();
+      var droidPoseAgeTicks = DateTime.UtcNow.Ticks - _lastDroidPoseUtcTicks;
+      var maxDroidPoseAgeTicks = (long)(_droidPoseMaxAgeSeconds * TimeSpan.TicksPerSecond);
+      var canUseDroidPose = _hasDroidPose &&
+                            droidPoseAgeTicks >= 0 &&
+                            droidPoseAgeTicks <= maxDroidPoseAgeTicks;
       var droidAlignment = Quaternion.identity;
-      if (useDroidPose && _alignDroidToWebCamTorso)
+      if (canUseDroidPose && _alignDroidToWebCamTorso)
       {
         var webTorso = GetTorsoOrientation(_webCamPose, _webCamVisibility);
         var droidTorso = GetTorsoOrientation(_droidPose, _droidVisibility);
         if (webTorso != Quaternion.identity && droidTorso != Quaternion.identity)
         {
-          droidAlignment = webTorso * Quaternion.Inverse(droidTorso);
+          _lastDroidAlignment = webTorso * Quaternion.Inverse(droidTorso);
+          _hasDroidAlignment = true;
         }
+
+        canUseDroidPose = _hasDroidAlignment;
+        droidAlignment = _lastDroidAlignment;
       }
 
       var webWeight = Mathf.Max(0.0f, _webCamWeight);
-      var droidWeight = useDroidPose ? Mathf.Max(0.0f, _droidCamWeight) : 0.0f;
-      var totalWeight = Mathf.Max(webWeight + droidWeight, Mathf.Epsilon);
-      var webNormalizedWeight = webWeight / totalWeight;
-      var droidNormalizedWeight = droidWeight / totalWeight;
       var webCenter = GetPelvisCenter(_webCamPose);
       var droidCenter = GetPelvisCenter(_droidPose);
+      _isUsingAnyDroidJoint = false;
 
       for (var i = 0; i < LandmarkCount; i++)
       {
-        var alignedDroid = useDroidPose ? webCenter + droidAlignment * (_droidPose[i] - droidCenter) : _webCamPose[i];
+        var useDroidJoint = canUseDroidPose &&
+                            _droidVisibility[i] > _droidVisibilityThreshold;
+        var droidWeight = useDroidJoint ? Mathf.Max(0.0f, _droidCamWeight) : 0.0f;
+        var totalWeight = Mathf.Max(webWeight + droidWeight, Mathf.Epsilon);
+        var webNormalizedWeight = webWeight / totalWeight;
+        var droidNormalizedWeight = droidWeight / totalWeight;
+        var alignedDroid = useDroidJoint
+          ? webCenter + droidAlignment * (_droidPose[i] - droidCenter)
+          : _webCamPose[i];
         _mergedPose[i] = _webCamPose[i] * webNormalizedWeight + alignedDroid * droidNormalizedWeight;
-        _mergedVisibility[i] = useDroidPose ? Mathf.Max(_webCamVisibility[i], _droidVisibility[i]) : _webCamVisibility[i];
+        _mergedVisibility[i] = useDroidJoint
+          ? Mathf.Max(_webCamVisibility[i], _droidVisibility[i])
+          : _webCamVisibility[i];
+        _isUsingAnyDroidJoint |= useDroidJoint;
       }
 
       _hasMergedPose = true;
     }
-  }
-
-  private bool HasReliableDroidPose()
-  {
-    return IsDroidVisible(PoseIndex.LeftShoulder) &&
-      IsDroidVisible(PoseIndex.RightShoulder) &&
-      IsDroidVisible(PoseIndex.LeftHip) &&
-      IsDroidVisible(PoseIndex.RightHip) &&
-      IsDroidVisible(PoseIndex.LeftElbow) &&
-      IsDroidVisible(PoseIndex.RightElbow) &&
-      IsDroidVisible(PoseIndex.LeftWrist) &&
-      IsDroidVisible(PoseIndex.RightWrist);
-  }
-
-  private bool IsDroidVisible(PoseIndex index)
-  {
-    return _droidVisibility[(int)index] > _droidVisibilityThreshold;
   }
 
   private int GetSourceLandmarkIndex(int targetIndex)

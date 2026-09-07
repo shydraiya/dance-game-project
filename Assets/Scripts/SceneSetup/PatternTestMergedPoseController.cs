@@ -23,6 +23,30 @@ public sealed class PatternTestMergedPoseController : MonoBehaviour
                                         _instance._mergedDriver.enabled &&
                                         _instance._mergedDriver.IsUsingDroidPose;
 
+    public static bool TryCopyActiveMergedPose(Vector3[] pose, float[] visibility)
+    {
+        return TryCopyMergedPose(pose, visibility, out bool usedDroidPose) &&
+               usedDroidPose;
+    }
+
+    public static bool TryCopyMergedPose(
+        Vector3[] pose, float[] visibility, out bool usedDroidPose)
+    {
+        usedDroidPose = false;
+        if (_instance == null || _instance._mergedDriver == null ||
+            !_instance._mergedDriver.enabled)
+        {
+            return false;
+        }
+
+        return _instance._mergedDriver.TryCopyMergedPose(
+            pose, visibility, out usedDroidPose);
+    }
+
+    public static HumanoidPoseDriver WebCamDriver => _instance?._webCamDriver;
+    public static Mediapipe.Unity.Sample.PoseLandmarkDetection.PoseLandmarkerRunner WebCamRunner =>
+        _instance?._sampleSetup?.PoseRunner;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void InstallSceneHook()
     {
@@ -66,8 +90,8 @@ public sealed class PatternTestMergedPoseController : MonoBehaviour
 
         CreateDroidCamRunner();
 
-        float timeoutAt = Time.realtimeSinceStartup + 12f;
-        while (!_droidCamRunner.IsSourcePrepared && Time.realtimeSinceStartup < timeoutAt)
+        Debug.Log("Pattern Test: waiting for DroidCam with no time limit; Webcam remains active.", this);
+        while (!_droidCamRunner.IsSourcePrepared)
         {
             yield return null;
         }
