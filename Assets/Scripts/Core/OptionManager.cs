@@ -21,6 +21,8 @@ public class OptionManager : MonoBehaviour
 
     private bool isOptionOpen = false;
 
+    public bool IsOptionOpen => optionPanel != null && optionPanel.activeInHierarchy;
+
     private void Start()
     {
         if (avatarDropdown != null)

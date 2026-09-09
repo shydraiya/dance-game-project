@@ -112,7 +112,7 @@ public sealed class InitialTPoseGateController : MonoBehaviour
 
         // Developer shortcut: only while the T-pose prompt is visible.
         if (_canvas != null && _canvas.isActiveAndEnabled &&
-            Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
+            Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
         {
             _completed = true;
             StartCoroutine(CompleteGate());

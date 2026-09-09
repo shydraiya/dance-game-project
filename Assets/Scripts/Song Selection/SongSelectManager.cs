@@ -48,11 +48,17 @@ public class SongSelectManager : MonoBehaviour
 
     private int selectedIndex;
     private bool isScrolling;
+    private OptionManager optionManager;
 
     private int TotalRowCount => visibleRowCount + bufferRowCount * 2;
 
     // 생성된 SongRow 배열에서 중앙 선택 곡이 위치하는 인덱스
     private int CenterRowIndex => bufferRowCount + visibleRowCount / 2;
+
+    private void Awake()
+    {
+        optionManager = FindAnyObjectByType<OptionManager>();
+    }
 
     private void Start()
     {
@@ -101,6 +107,13 @@ public class SongSelectManager : MonoBehaviour
 
     public void ConfirmSelection()
     {
+        // Also block confirmation on the option toggle frame, regardless of Update order.
+        if ((optionManager != null && optionManager.IsOptionOpen) ||
+            (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame))
+        {
+            return;
+        }
+
         SongData selectedSong = GetSelectedSong();
 
         if (selectedSong == null)
