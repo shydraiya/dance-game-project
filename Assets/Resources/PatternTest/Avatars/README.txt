@@ -1,12 +1,20 @@
-Per-song rigged Humanoid prefabs go in this folder.
+Dance avatar selection
+======================
+OptionManager connects the existing TMP dropdown to AvatarCatalog.
+Closing the options window saves SelectedAvatarId (santa / boy / girl) in PlayerPrefs.
+Default / invalid selection: santa.
 
-Requirements:
-- Prefab contains an Animator.
-- Model import Rig > Animation Type is Humanoid.
-- Configure Avatar reports a valid mapping.
-- Prefer root scale 1 and a height similar to the existing Dance Avatar.
+AvatarSelectionController applies the selection to PatternPosePlayer targets in
+Pattern Test before Start. It does not replace the webcam-driven avatar.
+Song data no longer selects an avatar.
 
-Set avatarPath in Assets/Data/songData.csv without extension, for example:
-PatternTest/Avatars/MyHumanoid
+SantaClaus.prefab, BoyAvatar.prefab and GirlAvatar.prefab are runtime models.
+BoyAvatar and GirlAvatar are FBX variants preserving the supplied materials and outline.
+Keep their Humanoid rigs valid. Model height and floor offset are matched to the
+existing dance avatar at scene initialization. Verify facing and limb poses in Play mode.
 
-An empty avatarPath keeps the Pattern Test scene defaults.
+Manual verification:
+- Select each avatar, close options, start a song and check the selected dancer.
+- Switch songs and restart the application: selection should persist.
+- Check arm/leg poses, stage height, floor contact, materials and camera visibility.
+- Verify T-pose gate, pause/resume and the webcam avatar behave as before.

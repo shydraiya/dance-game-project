@@ -48,10 +48,6 @@ public sealed class PatternTestSongPresentationController : MonoBehaviour
         {
             yield return LoadBackground(song.backgroundPath);
         }
-        if (!string.IsNullOrWhiteSpace(song.avatarPath))
-        {
-            ReplaceAvatars(song.avatarPath, session.SelectedPatternFrames);
-        }
     }
 
     private IEnumerator LoadBackground(string configuredPath)
@@ -154,86 +150,6 @@ public sealed class PatternTestSongPresentationController : MonoBehaviour
         return best != null ? best : Camera.main;
     }
 
-    private void ReplaceAvatars(string configuredPath, PatternFrame[] frames)
-    {
-        string resourcePath = NormalizeResourcePath(configuredPath);
-        GameObject prefab = Resources.Load<GameObject>(resourcePath);
-        if (prefab == null)
-        {
-            Debug.LogError(
-                $"Pattern Test avatar not found: Resources/{resourcePath}. " +
-                "Place a Humanoid prefab under Assets/Resources.", this);
-            return;
-        }
-
-        ReplacePatternAvatars(prefab, frames);
-        ReplacePlayerAvatar(prefab);
-    }
-
-    private static void ReplacePatternAvatars(GameObject prefab, PatternFrame[] frames)
-    {
-        PatternPosePlayer[] oldPlayers = FindObjectsByType<PatternPosePlayer>(
-            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        foreach (PatternPosePlayer oldPlayer in oldPlayers)
-        {
-            Transform oldTransform = oldPlayer.transform;
-            GameObject replacement = Instantiate(
-                prefab, oldTransform.position, oldTransform.rotation, oldTransform.parent);
-            replacement.name = oldPlayer.gameObject.name;
-            replacement.transform.localScale = oldTransform.localScale;
-            Animator animator = replacement.GetComponentInChildren<Animator>();
-            if (animator == null || !animator.isHuman)
-            {
-                Debug.LogError($"Avatar is not a rigged Humanoid: {prefab.name}");
-                Destroy(replacement);
-                continue;
-            }
-
-            PatternPosePlayer player = replacement.GetComponentInChildren<PatternPosePlayer>();
-            if (player == null)
-            {
-                player = replacement.AddComponent<PatternPosePlayer>();
-            }
-            player.SetTargetAnimator(animator, false);
-            player.Load(frames);
-            Destroy(oldPlayer.gameObject);
-        }
-    }
-
-    private static void ReplacePlayerAvatar(GameObject prefab)
-    {
-        HumanoidPoseDriver driver = FindFirstObjectByType<HumanoidPoseDriver>();
-        Animator oldAnimator = driver != null ? driver.GetComponentInChildren<Animator>() : null;
-        if (oldAnimator == null)
-        {
-            return;
-        }
-
-        Transform oldTransform = oldAnimator.transform;
-        GameObject replacement = Instantiate(
-            prefab, oldTransform.position, oldTransform.rotation, oldTransform.parent);
-        replacement.name = oldAnimator.gameObject.name + "_SongAvatar";
-        replacement.transform.localScale = oldTransform.localScale;
-        Animator animator = replacement.GetComponentInChildren<Animator>();
-        if (animator == null || !animator.isHuman)
-        {
-            Debug.LogError($"Player avatar is not a rigged Humanoid: {prefab.name}");
-            Destroy(replacement);
-            return;
-        }
-
-        foreach (PatternPosePlayer patternPlayer in replacement.GetComponentsInChildren<PatternPosePlayer>(true))
-        {
-            Destroy(patternPlayer);
-        }
-
-        foreach (Renderer renderer in oldAnimator.GetComponentsInChildren<Renderer>(true))
-        {
-            renderer.enabled = false;
-        }
-        driver.SetTargetAvatar(animator, animator.transform);
-    }
-
     private static string ResolveBackgroundPath(string configuredPath)
     {
         string path = configuredPath.Trim().Replace("\\", "/");
@@ -251,18 +167,6 @@ public sealed class PatternTestSongPresentationController : MonoBehaviour
             return Path.GetFullPath(Path.Combine(Application.dataPath, path));
         }
         return Path.Combine(Application.streamingAssetsPath, BackgroundFolder, path);
-    }
-
-    private static string NormalizeResourcePath(string configuredPath)
-    {
-        string path = configuredPath.Trim().Replace("\\", "/");
-        const string prefix = "Assets/Resources/";
-        if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-        {
-            path = path.Substring(prefix.Length);
-        }
-        string extension = Path.GetExtension(path);
-        return string.IsNullOrEmpty(extension) ? path : path.Substring(0, path.Length - extension.Length);
     }
 
     private static string ToFileUri(string path)

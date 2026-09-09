@@ -30,6 +30,8 @@ public class PatternPosePlayer : MonoBehaviour
     private Vector3 _initialRootLocalPosition;
     private float _lastAppliedTime = -1.0f;
 
+    public Animator TargetAnimator => _targetAnimator;
+
     private sealed class BoneSegment
     {
         public Transform Bone;
