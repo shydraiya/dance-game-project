@@ -132,7 +132,12 @@ namespace Mediapipe.Unity
 
       if (availableSources != null && availableSources.Length > 0)
       {
-        webCamDevice = availableSources[0];
+        // DroidCam is optional. Keep the physical webcam as the primary source
+        // even when a DroidCam virtual device is installed or enabled.
+        var physicalWebCamIndex = Array.FindIndex(
+          availableSources,
+          device => device.name.IndexOf("DroidCam", StringComparison.OrdinalIgnoreCase) < 0);
+        webCamDevice = availableSources[physicalWebCamIndex >= 0 ? physicalWebCamIndex : 0];
       }
     }
 

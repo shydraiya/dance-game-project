@@ -65,6 +65,9 @@ public class WebCamPoseLandmarkerRunner : MonoBehaviour
   private volatile bool _isLiveStreamRequestPending;
 
   public event Action<PoseLandmarkerResult> PoseLandmarksUpdated;
+  public Texture CurrentTexture => _imageSource?.GetCurrentTexture();
+  public string SourceName => _imageSource?.sourceName;
+  public bool IsSourcePrepared => _imageSource != null && _imageSource.isPrepared;
 
   public void Configure(
     RectTransform webCamPanel,
@@ -401,7 +404,9 @@ public class WebCamPoseLandmarkerRunner : MonoBehaviour
         yield break;
       }
 
-      _webCamTexture = new WebCamTexture(deviceName, _requestedWidth, _requestedHeight, _requestedFps);
+      // Let optional virtual cameras choose a supported native resolution.
+      // Some DroidCam drivers reject explicitly requested resolutions.
+      _webCamTexture = new WebCamTexture(deviceName);
       _webCamTexture.Play();
 
       const int timeoutFrame = 2000;

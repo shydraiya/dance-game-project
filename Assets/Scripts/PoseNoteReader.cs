@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mediapipe.Tasks.Components.Containers;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
@@ -119,10 +120,13 @@ public class PoseNoteReader : MonoBehaviour
   private readonly object _poseLock = new();
   private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
   private readonly float[] _latestVisibility = new float[LandmarkCount];
+  private readonly Vector3[] _mergedPoseSnapshot = new Vector3[LandmarkCount];
+  private readonly float[] _mergedVisibilitySnapshot = new float[LandmarkCount];
   private readonly Dictionary<string, Vector3> _currentPoseAngles = new();
   //private readonly Vector3[] _boneDirections = new Vector3[PatternFrame.JointCount];
 
   private bool _hasPose;
+  private bool _lastJudgeUsedMergedPose;
 
   public JudgeResult LastResult { get; private set; }
   public event Action<JudgeResult> JudgementUpdated;
@@ -301,6 +305,55 @@ public class PoseNoteReader : MonoBehaviour
     return bestResult.score < 0.0f ? new JudgeResult { rank = JudgeRank.None, noteTime = -1.0f } : bestResult;
   }
 
+  public JudgeDiagnostic EvaluatePatternForTesting(PatternFrame pattern, bool requestMerged)
+  {
+    var diagnostic = new JudgeDiagnostic
+    {
+      result = new JudgeResult
+      {
+        rank = JudgeRank.None,
+        score = -1.0f,
+        noteTime = pattern != null ? pattern.time : -1.0f
+      },
+      excludedDirections = string.Join("|", PatternJointKeys)
+    };
+
+    if (pattern == null)
+    {
+      return diagnostic;
+    }
+
+    Vector3[] pose;
+    float[] visibility;
+    if (requestMerged && PatternTestMergedPoseController.TryCopyMergedPose(
+          _mergedPoseSnapshot, _mergedVisibilitySnapshot, out bool usedDroidPose))
+    {
+      pose = _mergedPoseSnapshot;
+      visibility = _mergedVisibilitySnapshot;
+      diagnostic.usedMergedLandmarks = usedDroidPose;
+    }
+    else
+    {
+      lock (_poseLock)
+      {
+        if (!_hasPose)
+        {
+          return diagnostic;
+        }
+
+        pose = (Vector3[])_latestPose.Clone();
+        visibility = (float[])_latestVisibility.Clone();
+      }
+    }
+
+    BuildCurrentPoseAngles(pose, visibility);
+    diagnostic.result = CompareWithPatternFrame(pattern);
+    diagnostic.excludedLandmarks = GetExcludedLandmarkSummary(visibility);
+    diagnostic.excludedDirections = string.Join(
+      "|", PatternJointKeys.Where(key => !_currentPoseAngles.ContainsKey(key)));
+    return diagnostic;
+  }
+
   private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
   {
     // MediaPipe가 world landmark를 주면 우선 사용,
@@ -373,16 +426,29 @@ public class PoseNoteReader : MonoBehaviour
 
     Vector3[] pose;
     float[] visibility;
+    _lastJudgeUsedMergedPose =
+      PatternTestMergedPoseController.TryCopyActiveMergedPose(
+        _mergedPoseSnapshot, _mergedVisibilitySnapshot);
 
-    lock (_poseLock)
+    if (_lastJudgeUsedMergedPose)
     {
-      if (!_hasPose)
+      // MergedHumanoidPoseDriver has already applied the same coordinate and
+      // handedness mapping used for the avatar. Do not transform it again.
+      pose = _mergedPoseSnapshot;
+      visibility = _mergedVisibilitySnapshot;
+    }
+    else
+    {
+      lock (_poseLock)
       {
-        return false;
-      }
+        if (!_hasPose)
+        {
+          return false;
+        }
 
-      pose = (Vector3[])_latestPose.Clone();
-      visibility = (float[])_latestVisibility.Clone();
+        pose = (Vector3[])_latestPose.Clone();
+        visibility = (float[])_latestVisibility.Clone();
+      }
     }
 
     _currentPoseAngles.Clear();
@@ -400,6 +466,48 @@ public class PoseNoteReader : MonoBehaviour
     TryAddDirection("knee_r", pose, visibility, PoseIndex.RightKnee, PoseIndex.RightAnkle);
 
     return _currentPoseAngles.Count > 0;
+  }
+
+  private void BuildCurrentPoseAngles(Vector3[] pose, float[] visibility)
+  {
+    _currentPoseAngles.Clear();
+    TryAddDirection("neck", pose, visibility, PoseIndex.LeftHip, PoseIndex.RightHip, PoseIndex.LeftShoulder, PoseIndex.RightShoulder);
+    TryAddDirection("shoulder_l", pose, visibility, PoseIndex.LeftShoulder, PoseIndex.LeftElbow);
+    TryAddDirection("shoulder_r", pose, visibility, PoseIndex.RightShoulder, PoseIndex.RightElbow);
+    TryAddDirection("elbow_l", pose, visibility, PoseIndex.LeftElbow, PoseIndex.LeftWrist);
+    TryAddDirection("elbow_r", pose, visibility, PoseIndex.RightElbow, PoseIndex.RightWrist);
+    TryAddDirection("hip_l", pose, visibility, PoseIndex.LeftHip, PoseIndex.LeftKnee);
+    TryAddDirection("hip_r", pose, visibility, PoseIndex.RightHip, PoseIndex.RightKnee);
+    TryAddDirection("knee_l", pose, visibility, PoseIndex.LeftKnee, PoseIndex.LeftAnkle);
+    TryAddDirection("knee_r", pose, visibility, PoseIndex.RightKnee, PoseIndex.RightAnkle);
+  }
+
+  private string GetExcludedLandmarkSummary(float[] visibility)
+  {
+    var excluded = new List<string>();
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftShoulder, "left_shoulder");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightShoulder, "right_shoulder");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftElbow, "left_elbow");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightElbow, "right_elbow");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftWrist, "left_wrist");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightWrist, "right_wrist");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftHip, "left_hip");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightHip, "right_hip");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftKnee, "left_knee");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightKnee, "right_knee");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.LeftAnkle, "left_ankle");
+    AddExcludedLandmark(excluded, visibility, PoseIndex.RightAnkle, "right_ankle");
+    return string.Join("|", excluded);
+  }
+
+  private void AddExcludedLandmark(
+    List<string> excluded, float[] visibility, PoseIndex index, string name)
+  {
+    float value = visibility[(int)index];
+    if (value < _minimumVisibility)
+    {
+      excluded.Add($"{name}:{value:0.000}");
+    }
   }
 
   private JudgeResult CompareWithPatternFrame(PatternFrame frame)
@@ -558,6 +666,8 @@ public class PoseNoteReader : MonoBehaviour
   //PatternManager가 판
   public JudgeResult EvaluatePattern(PatternFrame pattern)
   {
+      _lastJudgeUsedMergedPose = false;
+
       if (pattern == null)
       {
           JudgeResult noPoseResult = new JudgeResult
@@ -607,6 +717,17 @@ public class PoseNoteReader : MonoBehaviour
 
       JudgementUpdated?.Invoke(result);
 
+      if (CameraDebugOverlayController.IsDebugEnabled)
+      {
+          Debug.Log(
+              $"[Camera Debug] 판정={result.rank}, " +
+              $"판정 입력={GetJudgementInputDescription()}, " +
+              $"아바타 출력={CameraDebugOverlayController.GetAvatarOutputMode()}, " +
+              $"patternTime={result.noteTime:0.000}",
+              this
+          );
+      }
+
       if (result.rank == JudgeRank.None)
       {
           if (_logJudgement)
@@ -644,5 +765,39 @@ public class PoseNoteReader : MonoBehaviour
               this
           );
       }
+  }
+
+  public struct JudgeDiagnostic
+  {
+    public JudgeResult result;
+    public bool usedMergedLandmarks;
+    public string excludedLandmarks;
+    public string excludedDirections;
+  }
+
+  private string GetJudgementInputDescription()
+  {
+      if (_lastJudgeUsedMergedPose)
+      {
+          return "MERGED";
+      }
+
+      if (_poseRunner != null)
+      {
+          return Mediapipe.Unity.Sample.ImageSourceProvider.CurrentSourceType ==
+                 global::ImageSourceType.WebCamera
+              ? "ONLY_WEBCAM"
+              : Mediapipe.Unity.Sample.ImageSourceProvider.CurrentSourceType.ToString();
+      }
+
+      if (_webCamPoseRunner != null)
+      {
+          string sourceName = _webCamPoseRunner.SourceName;
+          return string.IsNullOrEmpty(sourceName)
+              ? "DroidCam/WebCam runner"
+              : sourceName;
+      }
+
+      return "입력 없음";
   }
 }

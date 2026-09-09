@@ -5,14 +5,22 @@ using Mediapipe.Tasks.Vision.PoseLandmarker;
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
 using UnityEngine;
 
-public class HumanoidPoseDriver : MonoBehaviour
+public class MergedHumanoidPoseDriver : MonoBehaviour
 {
   private const int LandmarkCount = 33;
 
   [Header("Sources")]
   [SerializeField] private Animator _targetAnimator;
-  [SerializeField] private PoseLandmarkerRunner _poseRunner;
   [SerializeField] private Transform _modelRoot;
+  [SerializeField] private PoseLandmarkerRunner _webCamRunner;
+  [SerializeField] private WebCamPoseLandmarkerRunner _droidCamRunner;
+
+  [Header("Merge")]
+  [SerializeField, Range(0.0f, 1.0f)] private float _webCamWeight = 0.9f;
+  [SerializeField, Range(0.0f, 1.0f)] private float _droidCamWeight = 0.1f;
+  [SerializeField, Range(0.0f, 1.0f)] private float _droidVisibilityThreshold = 0.5f;
+  [SerializeField] private bool _alignDroidToWebCamTorso = true;
+  [SerializeField, Min(0.1f)] private float _droidPoseMaxAgeSeconds = 0.5f;
 
   [Header("Driving")]
   [SerializeField] private bool _driveRootPosition = true;
@@ -22,45 +30,33 @@ public class HumanoidPoseDriver : MonoBehaviour
   [SerializeField] private bool _driveLegs = true;
   [SerializeField] private float _rotationSmoothing = 18.0f;
   [SerializeField] private float _positionSmoothing = 12.0f;
-  [SerializeField, Range(0, 1)] private float _minimumVisibility = 0.35f;
+  [SerializeField, Range(0.0f, 1.0f)] private float _minimumVisibility = 0.35f;
 
   [Header("Landmark Mapping")]
-  [Tooltip("Swap incoming MediaPipe left/right labels without flipping the pose coordinates. Enable this when the solution labels your right side as left.")]
-  [SerializeField] private bool _mirrorHorizontally = true;
-  [Tooltip("Invert only the incoming landmark X coordinate after centering. This flips the pose coordinates without swapping left/right labels.")]
-  [SerializeField] private bool _invertXCoordinate;
+  [SerializeField] private bool _mirrorHorizontally;
+  [SerializeField] private bool _invertXCoordinate = true;
   [SerializeField] private Vector3 _landmarkScale = new Vector3(1.0f, -1.0f, -1.0f);
-  [SerializeField] private Vector3 _rootPositionScale = new Vector3(1.0f, 1.0f, 1.0f);
+  [SerializeField] private Vector3 _rootPositionScale = new Vector3(2.0f, 1.0f, 1.0f);
   [SerializeField] private Vector3 _rootPositionOffset;
 
-  [Header("Startup Guard")]
-  [SerializeField] private bool _ignorePoseInput;
-
-  [Header("Debug")]
-  [SerializeField] private bool _logMissingReferences = true;
-  [SerializeField] private bool _logStatus;
-  [SerializeField] private bool _hasPose;
-  [SerializeField] private bool _isCalibrated;
-  [SerializeField] private int _receivedPoseFrameCount;
-  [SerializeField] private int _appliedPoseFrameCount;
-  [SerializeField] private int _drivenBoneCount;
-  [SerializeField] private string _status = "Not started";
-
-  private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
-  private readonly float[] _latestVisibility = new float[LandmarkCount];
-  private readonly Vector3[] _pendingPose = new Vector3[LandmarkCount];
-  private readonly float[] _pendingVisibility = new float[LandmarkCount];
+  private readonly Vector3[] _webCamPose = new Vector3[LandmarkCount];
+  private readonly Vector3[] _droidPose = new Vector3[LandmarkCount];
+  private readonly Vector3[] _mergedPose = new Vector3[LandmarkCount];
+  private readonly float[] _webCamVisibility = new float[LandmarkCount];
+  private readonly float[] _droidVisibility = new float[LandmarkCount];
+  private readonly float[] _mergedVisibility = new float[LandmarkCount];
   private readonly Dictionary<HumanBodyBones, DrivenBone> _bones = new Dictionary<HumanBodyBones, DrivenBone>();
   private readonly object _poseLock = new object();
 
-  private bool _hasPendingPose;
-  private bool _hasPendingScreenPelvis;
-  private bool _hasScreenPelvis;
-  private float _nextStatusLogTime;
+  private bool _hasWebCamPose;
+  private bool _hasDroidPose;
+  private bool _hasMergedPose;
+  private bool _isUsingAnyDroidJoint;
+  private bool _hasDroidAlignment;
+  private bool _isCalibrated;
+  private long _lastDroidPoseUtcTicks;
+  private Quaternion _lastDroidAlignment = Quaternion.identity;
   private Vector3 _calibratedPelvisCenter;
-  private Vector3 _pendingScreenPelvisCenter;
-  private Vector3 _latestScreenPelvisCenter;
-  private Vector3 _calibratedScreenPelvisCenter;
   private Vector3 _calibratedRootLocalPosition;
   private Quaternion _calibratedRootRotation = Quaternion.identity;
   private Quaternion _calibratedRootLocalRotation = Quaternion.identity;
@@ -68,8 +64,16 @@ public class HumanoidPoseDriver : MonoBehaviour
   private OrientationCalibration _chestOrientation;
   private OrientationCalibration _headOrientation;
 
-  public Animator TargetAnimator => _targetAnimator;
-  public Transform ModelRoot => _modelRoot;
+  public bool IsUsingDroidPose
+  {
+    get
+    {
+      lock (_poseLock)
+      {
+        return _isUsingAnyDroidJoint;
+      }
+    }
+  }
 
   private enum PoseIndex
   {
@@ -118,11 +122,6 @@ public class HumanoidPoseDriver : MonoBehaviour
       _targetAnimator = GetComponentInChildren<Animator>();
     }
 
-    if (_poseRunner == null)
-    {
-      _poseRunner = FindAnyObjectByType<PoseLandmarkerRunner>();
-    }
-
     if (_modelRoot == null && _targetAnimator != null)
     {
       _modelRoot = _targetAnimator.transform;
@@ -131,56 +130,28 @@ public class HumanoidPoseDriver : MonoBehaviour
     CacheHumanoidBones();
   }
 
-  private void Start()
-  {
-    CacheHumanoidBones();
-    UpdateStatus();
-  }
-
   private void OnEnable()
   {
-    if (_poseRunner == null)
-    {
-      _poseRunner = FindAnyObjectByType<PoseLandmarkerRunner>();
-    }
-
-    if (_poseRunner != null)
-    {
-      _poseRunner.PoseLandmarksUpdated += OnPoseLandmarksUpdated;
-    }
+    Subscribe();
   }
 
   private void OnDisable()
   {
-    if (_poseRunner != null)
-    {
-      _poseRunner.PoseLandmarksUpdated -= OnPoseLandmarksUpdated;
-    }
+    Unsubscribe();
   }
 
   private void LateUpdate()
   {
-    if (_ignorePoseInput)
+    MergeLatestPoses();
+
+    if (!_hasMergedPose)
     {
       return;
     }
 
-    ConsumePendingPose();
-
-    if (_drivenBoneCount == 0 && _targetAnimator != null)
+    if (!_isCalibrated)
     {
-      CacheHumanoidBones();
-    }
-
-    if (_logStatus && Time.unscaledTime >= _nextStatusLogTime)
-    {
-      _nextStatusLogTime = Time.unscaledTime + 1.0f;
-      UpdateStatus();
-      Debug.Log($"{nameof(HumanoidPoseDriver)} status: {_status}", this);
-    }
-
-    if (!_hasPose || !_isCalibrated)
-    {
+      CalibrateFromCurrentPose();
       return;
     }
 
@@ -193,13 +164,13 @@ public class HumanoidPoseDriver : MonoBehaviour
 
     if (_driveTorso)
     {
-      ApplyOrientation(_hipsOrientation, GetTorsoOrientation(_latestPose));
-      ApplyOrientation(_chestOrientation, GetTorsoOrientation(_latestPose));
+      ApplyOrientation(_hipsOrientation, GetTorsoOrientation(_mergedPose, _mergedVisibility));
+      ApplyOrientation(_chestOrientation, GetTorsoOrientation(_mergedPose, _mergedVisibility));
     }
 
     if (_driveHead)
     {
-      ApplyOrientation(_headOrientation, GetHeadOrientation(_latestPose));
+      ApplyOrientation(_headOrientation, GetHeadOrientation(_mergedPose, _mergedVisibility));
     }
 
     if (_driveArms)
@@ -217,181 +188,196 @@ public class HumanoidPoseDriver : MonoBehaviour
       ApplySegment(HumanBodyBones.RightUpperLeg, PoseIndex.RightHip, PoseIndex.RightKnee, t);
       ApplySegment(HumanBodyBones.RightLowerLeg, PoseIndex.RightKnee, PoseIndex.RightAnkle, t);
     }
-
-    _appliedPoseFrameCount++;
   }
 
-  public void SetPoseRunner(PoseLandmarkerRunner poseRunner)
+  public void Configure(Animator targetAnimator, Transform modelRoot, PoseLandmarkerRunner webCamRunner, WebCamPoseLandmarkerRunner droidCamRunner)
   {
-    if (_poseRunner == poseRunner)
-    {
-      return;
-    }
-
-    if (isActiveAndEnabled && _poseRunner != null)
-    {
-      _poseRunner.PoseLandmarksUpdated -= OnPoseLandmarksUpdated;
-    }
-
-    _poseRunner = poseRunner;
-
-    if (isActiveAndEnabled && _poseRunner != null)
-    {
-      _poseRunner.PoseLandmarksUpdated += OnPoseLandmarksUpdated;
-    }
-  }
-
-  public void ConfigureDriving(bool driveRootPosition, bool driveTorso, bool driveHead, bool driveArms, bool driveLegs)
-  {
-    _driveRootPosition = driveRootPosition;
-    _driveTorso = driveTorso;
-    _driveHead = driveHead;
-    _driveArms = driveArms;
-    _driveLegs = driveLegs;
-  }
-
-  public void CopyDrivingConfigurationFrom(HumanoidPoseDriver source)
-  {
-    if (source == null)
-    {
-      return;
-    }
-
-    _driveRootPosition = source._driveRootPosition;
-    _driveTorso = source._driveTorso;
-    _driveHead = source._driveHead;
-    _driveArms = source._driveArms;
-    _driveLegs = source._driveLegs;
-    _rotationSmoothing = source._rotationSmoothing;
-    _positionSmoothing = source._positionSmoothing;
-    _minimumVisibility = source._minimumVisibility;
-    _mirrorHorizontally = source._mirrorHorizontally;
-    _invertXCoordinate = source._invertXCoordinate;
-    _landmarkScale = source._landmarkScale;
-    _rootPositionScale = source._rootPositionScale;
-    _rootPositionOffset = source._rootPositionOffset;
-    Recalibrate();
-  }
-
-  public void SetTargetAvatar(Animator targetAnimator, Transform modelRoot = null)
-  {
+    Unsubscribe();
     _targetAnimator = targetAnimator;
-    _modelRoot = modelRoot != null
-      ? modelRoot
-      : (_targetAnimator != null ? _targetAnimator.transform : transform);
+    _modelRoot = modelRoot;
+    _webCamRunner = webCamRunner;
+    _droidCamRunner = droidCamRunner;
     _isCalibrated = false;
+    _hasMergedPose = false;
     CacheHumanoidBones();
+    Subscribe();
   }
 
-  public void SetInvertXCoordinate(bool invertXCoordinate)
+  public void SetWeights(float webCamWeight, float droidCamWeight)
   {
-    _invertXCoordinate = invertXCoordinate;
+    _webCamWeight = Mathf.Max(0.0f, webCamWeight);
+    _droidCamWeight = Mathf.Max(0.0f, droidCamWeight);
   }
 
-  public void Recalibrate()
+  public void ApplyWebCamPose(PoseLandmarkerResult result)
   {
-    _isCalibrated = false;
-    CacheHumanoidBones();
-
-    if (_hasPose)
-    {
-      CalibrateFromCurrentPose();
-    }
+    CopyPose(result, _webCamPose, _webCamVisibility, out _hasWebCamPose);
   }
 
-  public void SetPoseInputBlocked(bool blocked, bool resetPoseState = true)
+  public void ApplyDroidCamPose(PoseLandmarkerResult result)
   {
-    _ignorePoseInput = blocked;
-    if (!resetPoseState)
-    {
-      UpdateStatus();
-      return;
-    }
-
+    CopyPose(result, _droidPose, _droidVisibility, out _hasDroidPose);
     lock (_poseLock)
     {
-      _hasPendingPose = false;
-      _hasPose = false;
-      _hasPendingScreenPelvis = false;
-      _hasScreenPelvis = false;
-    }
-
-    _isCalibrated = false;
-    UpdateStatus();
-  }
-
-  public void ApplyPoseLandmarkerResult(PoseLandmarkerResult result)
-  {
-    OnPoseLandmarksUpdated(result);
-  }
-
-  private void OnPoseLandmarksUpdated(PoseLandmarkerResult result)
-  {
-    if (_ignorePoseInput)
-    {
-      return;
-    }
-
-    var normalizedPose = result.poseLandmarks;
-    var hasNormalizedPose = normalizedPose != null && normalizedPose.Count > 0 &&
-      normalizedPose[0].landmarks != null && normalizedPose[0].landmarks.Count >= LandmarkCount;
-
-    var worldPose = result.poseWorldLandmarks;
-    if (worldPose != null && worldPose.Count > 0 && worldPose[0].landmarks != null && worldPose[0].landmarks.Count >= LandmarkCount)
-    {
-      CopyWorldPose(worldPose[0].landmarks, hasNormalizedPose ? normalizedPose[0].landmarks : null);
-      return;
-    }
-
-    if (hasNormalizedPose)
-    {
-      CopyNormalizedPose(normalizedPose[0].landmarks);
-      return;
-    }
-
-    lock (_poseLock)
-    {
-      _hasPendingPose = false;
-    }
-  }
-
-  private void CopyWorldPose(IReadOnlyList<Landmark> landmarks, IReadOnlyList<NormalizedLandmark> normalizedLandmarks)
-  {
-    lock (_poseLock)
-    {
-      for (var i = 0; i < LandmarkCount; i++)
+      if (_hasDroidPose)
       {
-        var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _pendingPose[i] = new Vector3(GetMappedX(landmark.x), landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
-        _pendingVisibility[i] = landmark.visibility ?? 1.0f;
+        _lastDroidPoseUtcTicks = DateTime.UtcNow.Ticks;
+      }
+    }
+  }
+
+  public bool TryCopyMergedPose(Vector3[] targetPose, float[] targetVisibility, out bool usedDroidPose)
+  {
+    usedDroidPose = false;
+    if (targetPose == null || targetVisibility == null ||
+        targetPose.Length < LandmarkCount || targetVisibility.Length < LandmarkCount)
+    {
+      return false;
+    }
+
+    // PatternManager judges during Update, before this component's LateUpdate.
+    // Refresh here so the judge reads the newest available camera frames.
+    MergeLatestPoses();
+
+    lock (_poseLock)
+    {
+      if (!_hasMergedPose)
+      {
+        return false;
       }
 
-      _hasPendingScreenPelvis = TryGetScreenPelvisCenter(normalizedLandmarks, out _pendingScreenPelvisCenter);
-      _hasPendingPose = true;
-      _receivedPoseFrameCount++;
+      Array.Copy(_mergedPose, targetPose, LandmarkCount);
+      Array.Copy(_mergedVisibility, targetVisibility, LandmarkCount);
+      usedDroidPose = _isUsingAnyDroidJoint;
+      return true;
     }
   }
 
-  private void CopyNormalizedPose(IReadOnlyList<NormalizedLandmark> landmarks)
+  private void Subscribe()
+  {
+    if (_webCamRunner != null)
+    {
+      _webCamRunner.PoseLandmarksUpdated += ApplyWebCamPose;
+    }
+
+    if (_droidCamRunner != null)
+    {
+      _droidCamRunner.PoseLandmarksUpdated += ApplyDroidCamPose;
+    }
+  }
+
+  private void Unsubscribe()
+  {
+    if (_webCamRunner != null)
+    {
+      _webCamRunner.PoseLandmarksUpdated -= ApplyWebCamPose;
+    }
+
+    if (_droidCamRunner != null)
+    {
+      _droidCamRunner.PoseLandmarksUpdated -= ApplyDroidCamPose;
+    }
+  }
+
+  private void CopyPose(PoseLandmarkerResult result, Vector3[] targetPose, float[] targetVisibility, out bool hasPose)
   {
     lock (_poseLock)
     {
-      for (var i = 0; i < LandmarkCount; i++)
+      hasPose = false;
+
+      var worldPose = result.poseWorldLandmarks;
+      if (worldPose != null && worldPose.Count > 0 && worldPose[0].landmarks != null && worldPose[0].landmarks.Count >= LandmarkCount)
       {
-        var landmark = landmarks[GetSourceLandmarkIndex(i)];
-        _pendingPose[i] = new Vector3(GetMappedX(landmark.x - 0.5f), (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
-        _pendingVisibility[i] = landmark.visibility ?? 1.0f;
+        CopyWorldPose(worldPose[0].landmarks, targetPose, targetVisibility);
+        hasPose = true;
+        return;
       }
 
-      _hasPendingScreenPelvis = TryGetScreenPelvisCenter(landmarks, out _pendingScreenPelvisCenter);
-      _hasPendingPose = true;
-      _receivedPoseFrameCount++;
+      var normalizedPose = result.poseLandmarks;
+      if (normalizedPose != null && normalizedPose.Count > 0 && normalizedPose[0].landmarks != null && normalizedPose[0].landmarks.Count >= LandmarkCount)
+      {
+        CopyNormalizedPose(normalizedPose[0].landmarks, targetPose, targetVisibility);
+        hasPose = true;
+      }
     }
   }
 
-  private float GetMappedX(float centeredX)
+  private void CopyWorldPose(IReadOnlyList<Landmark> landmarks, Vector3[] targetPose, float[] targetVisibility)
   {
-    return centeredX * (_invertXCoordinate ? -_landmarkScale.x : _landmarkScale.x);
+    for (var i = 0; i < LandmarkCount; i++)
+    {
+      var landmark = landmarks[GetSourceLandmarkIndex(i)];
+      targetPose[i] = new Vector3(GetMappedX(landmark.x), landmark.y * _landmarkScale.y, landmark.z * _landmarkScale.z);
+      targetVisibility[i] = landmark.visibility ?? 1.0f;
+    }
+  }
+
+  private void CopyNormalizedPose(IReadOnlyList<NormalizedLandmark> landmarks, Vector3[] targetPose, float[] targetVisibility)
+  {
+    for (var i = 0; i < LandmarkCount; i++)
+    {
+      var landmark = landmarks[GetSourceLandmarkIndex(i)];
+      targetPose[i] = new Vector3(GetMappedX(landmark.x - 0.5f), (landmark.y - 0.5f) * _landmarkScale.y, landmark.z * _landmarkScale.z);
+      targetVisibility[i] = landmark.visibility ?? 1.0f;
+    }
+  }
+
+  private void MergeLatestPoses()
+  {
+    lock (_poseLock)
+    {
+      if (!_hasWebCamPose)
+      {
+        _hasMergedPose = false;
+        _isUsingAnyDroidJoint = false;
+        return;
+      }
+
+      var droidPoseAgeTicks = DateTime.UtcNow.Ticks - _lastDroidPoseUtcTicks;
+      var maxDroidPoseAgeTicks = (long)(_droidPoseMaxAgeSeconds * TimeSpan.TicksPerSecond);
+      var canUseDroidPose = _hasDroidPose &&
+                            droidPoseAgeTicks >= 0 &&
+                            droidPoseAgeTicks <= maxDroidPoseAgeTicks;
+      var droidAlignment = Quaternion.identity;
+      if (canUseDroidPose && _alignDroidToWebCamTorso)
+      {
+        var webTorso = GetTorsoOrientation(_webCamPose, _webCamVisibility);
+        var droidTorso = GetTorsoOrientation(_droidPose, _droidVisibility);
+        if (webTorso != Quaternion.identity && droidTorso != Quaternion.identity)
+        {
+          _lastDroidAlignment = webTorso * Quaternion.Inverse(droidTorso);
+          _hasDroidAlignment = true;
+        }
+
+        canUseDroidPose = _hasDroidAlignment;
+        droidAlignment = _lastDroidAlignment;
+      }
+
+      var webWeight = Mathf.Max(0.0f, _webCamWeight);
+      var webCenter = GetPelvisCenter(_webCamPose);
+      var droidCenter = GetPelvisCenter(_droidPose);
+      _isUsingAnyDroidJoint = false;
+
+      for (var i = 0; i < LandmarkCount; i++)
+      {
+        var useDroidJoint = canUseDroidPose &&
+                            _droidVisibility[i] > _droidVisibilityThreshold;
+        var droidWeight = useDroidJoint ? Mathf.Max(0.0f, _droidCamWeight) : 0.0f;
+        var totalWeight = Mathf.Max(webWeight + droidWeight, Mathf.Epsilon);
+        var webNormalizedWeight = webWeight / totalWeight;
+        var droidNormalizedWeight = droidWeight / totalWeight;
+        var alignedDroid = useDroidJoint
+          ? webCenter + droidAlignment * (_droidPose[i] - droidCenter)
+          : _webCamPose[i];
+        _mergedPose[i] = _webCamPose[i] * webNormalizedWeight + alignedDroid * droidNormalizedWeight;
+        _mergedVisibility[i] = useDroidJoint
+          ? Mathf.Max(_webCamVisibility[i], _droidVisibility[i])
+          : _webCamVisibility[i];
+        _isUsingAnyDroidJoint |= useDroidJoint;
+      }
+
+      _hasMergedPose = true;
+    }
   }
 
   private int GetSourceLandmarkIndex(int targetIndex)
@@ -439,56 +425,17 @@ public class HumanoidPoseDriver : MonoBehaviour
     };
   }
 
-  private void ConsumePendingPose()
+  private float GetMappedX(float x)
   {
-    lock (_poseLock)
-    {
-      if (!_hasPendingPose)
-      {
-        return;
-      }
-
-      Array.Copy(_pendingPose, _latestPose, LandmarkCount);
-      Array.Copy(_pendingVisibility, _latestVisibility, LandmarkCount);
-      _hasScreenPelvis = _hasPendingScreenPelvis;
-      if (_hasPendingScreenPelvis)
-      {
-        _latestScreenPelvisCenter = _pendingScreenPelvisCenter;
-      }
-      _hasPendingPose = false;
-      _hasPose = true;
-    }
-
-    if (!_isCalibrated)
-    {
-      CalibrateFromCurrentPose();
-    }
-
-    UpdateStatus();
+    return x * (_invertXCoordinate ? -_landmarkScale.x : _landmarkScale.x);
   }
 
   private void CacheHumanoidBones()
   {
     _bones.Clear();
-    _drivenBoneCount = 0;
 
-    if (_targetAnimator == null)
+    if (_targetAnimator == null || !_targetAnimator.isHuman)
     {
-      if (_logMissingReferences)
-      {
-        Debug.LogWarning($"{nameof(HumanoidPoseDriver)} needs a target Animator.", this);
-      }
-      UpdateStatus();
-      return;
-    }
-
-    if (!_targetAnimator.isHuman)
-    {
-      if (_logMissingReferences)
-      {
-        Debug.LogWarning($"{nameof(HumanoidPoseDriver)} target Animator is not Humanoid.", this);
-      }
-      UpdateStatus();
       return;
     }
 
@@ -508,8 +455,6 @@ public class HumanoidPoseDriver : MonoBehaviour
       _chestOrientation = CreateOrientationCalibration(HumanBodyBones.Spine);
     }
     _headOrientation = CreateOrientationCalibration(HumanBodyBones.Head);
-    _drivenBoneCount = _bones.Count;
-    UpdateStatus();
   }
 
   private void AddSegment(HumanBodyBones bone, HumanBodyBones childBone)
@@ -558,20 +503,14 @@ public class HumanoidPoseDriver : MonoBehaviour
       return;
     }
 
-    _calibratedPelvisCenter = GetPelvisCenter(_latestPose);
-    if (_hasScreenPelvis)
-    {
-      _calibratedScreenPelvisCenter = _latestScreenPelvisCenter;
-    }
+    _calibratedPelvisCenter = GetPelvisCenter(_mergedPose);
     _calibratedRootLocalPosition = _modelRoot.localPosition;
     _calibratedRootRotation = _modelRoot.rotation;
     _calibratedRootLocalRotation = _modelRoot.localRotation;
-
-    _hipsOrientation.RestPoseOrientation = GetTorsoOrientation(_latestPose);
+    _hipsOrientation.RestPoseOrientation = GetTorsoOrientation(_mergedPose, _mergedVisibility);
     _chestOrientation.RestPoseOrientation = _hipsOrientation.RestPoseOrientation;
-    _headOrientation.RestPoseOrientation = GetHeadOrientation(_latestPose);
+    _headOrientation.RestPoseOrientation = GetHeadOrientation(_mergedPose, _mergedVisibility);
     _isCalibrated = true;
-    UpdateStatus();
   }
 
   private void ApplyRootPosition()
@@ -581,11 +520,7 @@ public class HumanoidPoseDriver : MonoBehaviour
       return;
     }
 
-    // World landmarks are pelvis-relative, so they cannot represent movement across
-    // the camera image. Use normalized landmarks for root translation when available.
-    var pelvisDelta = _hasScreenPelvis
-      ? _latestScreenPelvisCenter - _calibratedScreenPelvisCenter
-      : GetPelvisCenter(_latestPose) - _calibratedPelvisCenter;
+    var pelvisDelta = GetPelvisCenter(_mergedPose) - _calibratedPelvisCenter;
     var targetLocalPosition = _calibratedRootLocalPosition + (_calibratedRootLocalRotation * Vector3.Scale(pelvisDelta, _rootPositionScale)) + _rootPositionOffset;
     var t = 1.0f - Mathf.Exp(-_positionSmoothing * Time.deltaTime);
     _modelRoot.localPosition = Vector3.Lerp(_modelRoot.localPosition, targetLocalPosition, t);
@@ -598,7 +533,7 @@ public class HumanoidPoseDriver : MonoBehaviour
       return;
     }
 
-    var targetDirection = _latestPose[(int)end] - _latestPose[(int)start];
+    var targetDirection = _mergedPose[(int)end] - _mergedPose[(int)start];
     if (targetDirection.sqrMagnitude < 0.000001f)
     {
       return;
@@ -622,9 +557,9 @@ public class HumanoidPoseDriver : MonoBehaviour
     calibration.Transform.rotation = Quaternion.Slerp(calibration.Transform.rotation, targetRotation, t);
   }
 
-  private Quaternion GetTorsoOrientation(Vector3[] pose)
+  private Quaternion GetTorsoOrientation(Vector3[] pose, float[] visibility)
   {
-    if (!HasVisible(PoseIndex.LeftShoulder) || !HasVisible(PoseIndex.RightShoulder) || !HasVisible(PoseIndex.LeftHip) || !HasVisible(PoseIndex.RightHip))
+    if (!HasVisible(PoseIndex.LeftShoulder, visibility) || !HasVisible(PoseIndex.RightShoulder, visibility) || !HasVisible(PoseIndex.LeftHip, visibility) || !HasVisible(PoseIndex.RightHip, visibility))
     {
       return Quaternion.identity;
     }
@@ -640,9 +575,9 @@ public class HumanoidPoseDriver : MonoBehaviour
     return BuildOrientation(right, up);
   }
 
-  private Quaternion GetHeadOrientation(Vector3[] pose)
+  private Quaternion GetHeadOrientation(Vector3[] pose, float[] visibility)
   {
-    if (!HasVisible(PoseIndex.Nose) || !HasVisible(PoseIndex.LeftEar) || !HasVisible(PoseIndex.RightEar))
+    if (!HasVisible(PoseIndex.Nose, visibility) || !HasVisible(PoseIndex.LeftEar, visibility) || !HasVisible(PoseIndex.RightEar, visibility))
     {
       return Quaternion.identity;
     }
@@ -691,23 +626,6 @@ public class HumanoidPoseDriver : MonoBehaviour
     return (pose[(int)PoseIndex.LeftHip] + pose[(int)PoseIndex.RightHip]) * 0.5f;
   }
 
-  private bool TryGetScreenPelvisCenter(IReadOnlyList<NormalizedLandmark> landmarks, out Vector3 pelvisCenter)
-  {
-    pelvisCenter = default;
-    if (landmarks == null || landmarks.Count < LandmarkCount)
-    {
-      return false;
-    }
-
-    var leftHip = landmarks[GetSourceLandmarkIndex((int)PoseIndex.LeftHip)];
-    var rightHip = landmarks[GetSourceLandmarkIndex((int)PoseIndex.RightHip)];
-    var x = ((leftHip.x + rightHip.x) * 0.5f) - 0.5f;
-    var y = ((leftHip.y + rightHip.y) * 0.5f) - 0.5f;
-    var z = (leftHip.z + rightHip.z) * 0.5f;
-    pelvisCenter = new Vector3(GetMappedX(x), y * _landmarkScale.y, z * _landmarkScale.z);
-    return true;
-  }
-
   private bool HasCorePose()
   {
     return HasVisible(PoseIndex.LeftShoulder) &&
@@ -718,42 +636,11 @@ public class HumanoidPoseDriver : MonoBehaviour
 
   private bool HasVisible(PoseIndex index)
   {
-    return _latestVisibility[(int)index] >= _minimumVisibility;
+    return HasVisible(index, _mergedVisibility);
   }
 
-  private void UpdateStatus()
+  private bool HasVisible(PoseIndex index, float[] visibility)
   {
-    if (_targetAnimator == null)
-    {
-      _status = "Target Animator is missing";
-    }
-    else if (!_targetAnimator.isHuman)
-    {
-      _status = "Target Animator is not Humanoid";
-    }
-    else if (_poseRunner == null)
-    {
-      _status = "Pose Runner is missing";
-    }
-    else if (_ignorePoseInput)
-    {
-      _status = "Pose input is blocked";
-    }
-    else if (_drivenBoneCount == 0)
-    {
-      _status = "No humanoid limb bones cached";
-    }
-    else if (!_hasPose)
-    {
-      _status = "Waiting for pose landmarks";
-    }
-    else if (!_isCalibrated)
-    {
-      _status = "Waiting for calibration core landmarks";
-    }
-    else
-    {
-      _status = "Driving humanoid pose";
-    }
+    return visibility[(int)index] >= _minimumVisibility;
   }
 }
