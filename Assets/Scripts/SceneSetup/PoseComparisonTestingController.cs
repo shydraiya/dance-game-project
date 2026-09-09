@@ -206,6 +206,14 @@ public sealed class PoseComparisonTestingController : MonoBehaviour
         _webCamAvatar.name = sourceAnimator.gameObject.name + "_ONLY_WEBCAM_TEST";
         _webCamAvatar.transform.localScale = sourceAnimator.transform.localScale;
 
+        // Keep the clone active so its webcam-only pose is still calculated,
+        // but do not draw the comparison avatar in the game view.
+        foreach (Renderer avatarRenderer in
+                 _webCamAvatar.GetComponentsInChildren<Renderer>(true))
+        {
+            avatarRenderer.enabled = false;
+        }
+
         foreach (MergedHumanoidPoseDriver mergedDriver in
                  _webCamAvatar.GetComponentsInChildren<MergedHumanoidPoseDriver>(true))
         {
@@ -226,7 +234,7 @@ public sealed class PoseComparisonTestingController : MonoBehaviour
         driver.SetTargetAvatar(targetAnimator, targetAnimator.transform);
         driver.SetPoseInputBlocked(false);
         driver.enabled = true;
-        Debug.Log($"[Testing Mode] Webcam-only avatar created: {_webCamAvatar.name}", this);
+        Debug.Log($"[Testing Mode] Webcam-only calculation avatar created (rendering disabled): {_webCamAvatar.name}", this);
     }
 
     private static void AccumulateAngle(
