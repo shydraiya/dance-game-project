@@ -696,7 +696,6 @@ MonoBehaviour:
     patternPath: 
     coverPath: 
     backgroundPath: 
-    avatarPath: 
   _loadedPatternFrameCount: 0
   _patternTimeRange: No pattern loaded
   _sessionStatus: No song selected

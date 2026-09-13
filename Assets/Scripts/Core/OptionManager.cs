@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using TMPro;
+using System.Collections.Generic;
 
 public class OptionManager : MonoBehaviour
 {
@@ -11,14 +13,27 @@ public class OptionManager : MonoBehaviour
     [SerializeField]
     private Slider musicSlider;
 
+    [SerializeField] private TMP_Dropdown avatarDropdown;
+
     [Header("Music")]
     [SerializeField]
     private AudioSource musicAudioSource;
 
     private bool isOptionOpen = false;
 
+    public bool IsOptionOpen => optionPanel != null && optionPanel.activeInHierarchy;
+
     private void Start()
     {
+        if (avatarDropdown != null)
+        {
+            var names = new List<string>();
+            for (int i = 0; i < AvatarCatalog.Count; i++) names.Add(AvatarCatalog.GetName(i));
+            avatarDropdown.ClearOptions();
+            avatarDropdown.AddOptions(names);
+            avatarDropdown.SetValueWithoutNotify(AvatarCatalog.IndexOf(AvatarSelectionSettings.Load()));
+            avatarDropdown.RefreshShownValue();
+        }
         float savedVolume = MusicVolumeSettings.LoadVolume();
 
         musicSlider.minValue = 0f;
@@ -64,6 +79,11 @@ public class OptionManager : MonoBehaviour
 
     private void CloseOption()
     {
+        if (avatarDropdown != null)
+        {
+            avatarDropdown.Hide();
+            AvatarSelectionSettings.Save(AvatarCatalog.GetId(avatarDropdown.value));
+        }
         SaveMusicVolume();
 
         optionPanel.SetActive(false);

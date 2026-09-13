@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 75ee2e4975974b85a49518d33bc00f49
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 625f186215c104763be7675aa2d941aa, type: 3}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 326083
+  packageName: Casual Boy & Girl low poly characters
+  packageVersion: 1.0
+  assetPath: Assets/Girl & Boy Characters/Shaders/ToonShader.shadergraph
+  uploadId: 771637

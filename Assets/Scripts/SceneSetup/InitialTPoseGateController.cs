@@ -4,6 +4,7 @@ using Mediapipe.Tasks.Components.Containers;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -107,6 +108,15 @@ public sealed class InitialTPoseGateController : MonoBehaviour
             _poseDriver?.SetPoseInputBlocked(false);
             _poseDriver?.Recalibrate();
             SetGuideText("화면 중앙에서 T 포즈를 취해 주세요");
+        }
+
+        // Developer shortcut: only while the T-pose prompt is visible.
+        if (_canvas != null && _canvas.isActiveAndEnabled &&
+            Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
+        {
+            _completed = true;
+            StartCoroutine(CompleteGate());
+            return;
         }
 
         if (!_latestPoseMatches)

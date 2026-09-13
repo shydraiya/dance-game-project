@@ -19,6 +19,5 @@ public class SongData
 
     // Pattern Test presentation metadata.
     public string backgroundPath;
-    public string avatarPath;
 
 }
