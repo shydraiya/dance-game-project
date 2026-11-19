@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEngine.Rendering;
 
 public static class CommandLineBuild
 {
@@ -18,6 +19,10 @@ public static class CommandLineBuild
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
         EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, BuildTarget.StandaloneWindows64);
+
+        PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64, false);
+        PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,
+            new[] { GraphicsDeviceType.Direct3D11 });
 
         string[] scenes = Array.ConvertAll(
             Array.FindAll(EditorBuildSettings.scenes, scene => scene.enabled),

@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
         instance.judgeMiss = 0;
         instance.gameTime = 0.0f;
         instance.maxGameTime = 150.0f;
-        Application.targetFrameRate = 60;
+        FrameRateSettings.ApplySaved();
     }
 
     private void Start()
