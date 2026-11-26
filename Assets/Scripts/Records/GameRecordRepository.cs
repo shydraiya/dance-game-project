@@ -1,3 +1,6 @@
+// 곡별 최고 점수·정확도·플레이 횟수를 records.json으로 저장하고 복원한다.
+// Application.persistentDataPath를 사용하여 실행 파일 위치와 별개로 기록을 유지한다.
+
 using System;
 using System.IO;
 using UnityEngine;
@@ -17,6 +20,7 @@ public static class GameRecordRepository
         return saveData.records.Find(record => record.songId == songId);
     }
 
+    // 플레이 횟수는 매번 증가시키고 최고 점수와 최고 정확도는 각각 더 좋은 값일 때 갱신한다.
     public static bool SaveResult(GameResult result)
     {
         if (result == null)

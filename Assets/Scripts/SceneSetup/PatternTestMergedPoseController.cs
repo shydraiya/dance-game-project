@@ -1,3 +1,6 @@
+// Pattern Test 씬에서 정면 입력과 DroidCam 보조 입력을 연결하는 초기화 컴포넌트이다.
+// 현재 자동 활성화 조건은 카메라 두 대가 아니라 DroidCam 이름의 장치 존재 여부이다.
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -136,6 +139,7 @@ public sealed class PatternTestMergedPoseController : MonoBehaviour
             DroidCamName);
     }
 
+    // 현재 아바타에 두 추론 입력을 연결하고 병합 비율을 설정한다.
     private void ConfigureCurrentAvatar()
     {
         if (_mergedDriver == null || _webCamDriver == null ||
@@ -153,6 +157,7 @@ public sealed class PatternTestMergedPoseController : MonoBehaviour
         _mergedDriver.SetWeights(0.9f, 0.1f);
     }
 
+    // 현재는 DroidCam 이름을 가진 장치만 자동 병합 대상으로 감지한다. 일반 웹캠 두 대 자동 선택과는 다르다.
     private static bool HasDroidCamDevice()
     {
         return WebCamTexture.devices.Any(device =>

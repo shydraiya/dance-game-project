@@ -1,3 +1,5 @@
+// 두 Unity 카메라의 화면 배치를 단축키로 전환한다. 영상 출력 배치용이며 자세 병합 기능과는 별개이다.
+
 using UnityEngine;
 
 public class DualCameraViewSwapController : MonoBehaviour
@@ -18,6 +20,7 @@ public class DualCameraViewSwapController : MonoBehaviour
     ApplyLayout();
   }
 
+  // 지정 키 입력을 확인해 두 출력 카메라의 표시 배치를 전환한다.
   private void Update()
   {
     if (Input.GetKeyDown(_toggleKey))

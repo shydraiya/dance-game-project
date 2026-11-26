@@ -1,3 +1,6 @@
+// 곡 선택 화면의 옵션 패널을 관리한다. 볼륨·아바타·목표 FPS를 저장하고 UI에 반영한다.
+// 해상도 항목은 현재 1920×1080 하나만 제공하므로 선택 기능은 비활성화된다.
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -96,6 +99,7 @@ public class OptionManager : MonoBehaviour
         isOptionOpen = false;
     }
 
+    // 기존 아바타 드롭다운의 스타일을 재사용한다. 현재 지원 해상도가 하나이므로 선택은 비활성화된다.
     private void CreateResolutionDropdown()
     {
         if (optionPanel == null || avatarDropdown == null) return;

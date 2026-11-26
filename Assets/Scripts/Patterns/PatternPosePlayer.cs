@@ -1,3 +1,6 @@
+// 로드된 PatternFrame을 게임 시간에 맞춰 Humanoid 모델에 재생한다.
+// 인접 프레임의 방향 벡터를 보간하여 기준 동작이 연속적으로 보이도록 한다.
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -151,6 +154,7 @@ public class PatternPosePlayer : MonoBehaviour
         }
     }
 
+    // 요청 시각을 둘러싼 두 프레임을 찾아 보간한 자세를 적용한다.
     public void ApplyAtTime(float time)
     {
         if (!_isLoaded || _frames.Length == 0)

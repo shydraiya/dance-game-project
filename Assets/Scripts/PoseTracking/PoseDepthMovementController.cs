@@ -1,3 +1,6 @@
+// 화면상 신체 폭과 골반 Z값의 변화를 이용해 대상의 앞뒤 이동을 추정한다.
+// 초기 관측값을 기준으로 보정하고 이동 범위·평활화를 적용한다. 실제 거리 측정값은 아니다.
+
 using System.Collections.Generic;
 using Mediapipe.Tasks.Components.Containers;
 using Mediapipe.Tasks.Vision.PoseLandmarker;
@@ -110,6 +113,7 @@ public class PoseDepthMovementController : MonoBehaviour
     ApplyZOffset(_currentZOffset);
   }
 
+  // 현재 자세를 거리 변화의 기준으로 다시 수집한다.
   public void BeginCalibration()
   {
     if (_targetRoot == null)

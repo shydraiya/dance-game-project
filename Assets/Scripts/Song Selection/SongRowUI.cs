@@ -1,3 +1,5 @@
+// 곡 선택 목록의 한 행을 표시한다. 곡 정보와 저장된 기록을 연결하고 선택 상태·배치·투명도를 갱신한다.
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,6 +35,7 @@ public class SongRowUI : MonoBehaviour
         baseSize = rectTransform.sizeDelta;
     }
 
+    // 한 행의 곡 표시 정보와 저장 기록을 갱신한다. 스크롤로 행을 재사용할 때도 호출된다.
     public void Bind(SongData song)
     {
         if (song == null)

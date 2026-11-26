@@ -1,3 +1,6 @@
+// 곡 목록과 스크롤 UI를 관리하고 키보드로 선택한 곡을 확정한다.
+// SongSessionController에 선택 정보를 저장한 뒤 게임 씬으로 전환한다.
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -105,6 +108,7 @@ public class SongSelectManager : MonoBehaviour
         TryMove(1);
     }
 
+    // 옵션 표시 등 입력 제한을 확인한 후 선택 곡을 세션에 전달하고 게임 씬을 연다.
     public void ConfirmSelection()
     {
         // Also block confirmation on the option toggle frame, regardless of Update order.

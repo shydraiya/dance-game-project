@@ -1,3 +1,6 @@
+// MediaPipe 관절 좌표를 Unity Humanoid의 뼈 회전과 루트 이동으로 변환한다.
+// 초기 자세를 기준으로 보정하고 움직임을 평활화하여 사용자의 동작을 아바타에 반영한다.
+
 using System;
 using System.Collections.Generic;
 using Mediapipe.Tasks.Components.Containers;
@@ -158,6 +161,7 @@ public class HumanoidPoseDriver : MonoBehaviour
     }
   }
 
+  // 프레임의 자세 데이터를 뼈대에 적용한다. 보정 기준과 평활화를 통해 회전·위치의 급변을 줄인다.
   private void LateUpdate()
   {
     if (_ignorePoseInput)

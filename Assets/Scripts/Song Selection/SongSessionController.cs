@@ -1,3 +1,6 @@
+// 곡 선택 씬과 게임 씬 사이에서 곡 정보와 로드된 패턴을 전달하는 세션이다.
+// DontDestroyOnLoad로 유지되며, 같은 세션이 중복 생성되지 않도록 관리한다.
+
 using UnityEngine;
 
 public class SongSessionController : MonoBehaviour
@@ -45,6 +48,7 @@ public class SongSessionController : MonoBehaviour
     }
 
 
+    // 곡 선택이 바뀌면 연결된 패턴도 함께 다시 읽어 이전 곡 데이터가 남지 않게 한다.
     public void SetSelectedSong(SongData song)
     {
         _selectedSong = song;

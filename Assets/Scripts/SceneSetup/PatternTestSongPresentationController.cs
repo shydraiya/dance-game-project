@@ -1,3 +1,6 @@
+// 선택한 곡의 배경을 플레이 씬에 구성한다.
+// 설정된 이미지 경로를 해석해 비동기로 읽고 최종 출력 카메라에 맞춰 배치한다.
+
 using System;
 using System.Collections;
 using System.IO;
@@ -150,6 +153,7 @@ public sealed class PatternTestSongPresentationController : MonoBehaviour
         return best != null ? best : Camera.main;
     }
 
+    // 곡 설정의 배경 경로를 실행 환경에서 읽을 수 있는 실제 파일 경로로 해석한다.
     private static string ResolveBackgroundPath(string configuredPath)
     {
         string path = configuredPath.Trim().Replace("\\", "/");

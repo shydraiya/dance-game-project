@@ -1,3 +1,6 @@
+// MediaPipe 샘플의 추론기·화면·관절 표시를 현재 씬의 UI에 연결한다.
+// 샘플 내부 필드 연결에는 리플렉션을 사용하므로 플러그인 구조 변경 시 확인이 필요하다.
+
 using System.Reflection;
 using Mediapipe.Unity;
 using Mediapipe.Unity.Sample;
@@ -44,6 +47,7 @@ public class ModelTestPoseLandmarkerSampleSetup : MonoBehaviour
   public GameObject AnnotatableScreenPrefab => _annotatableScreenPrefab;
   public GameObject PoseAnnotationPrefab => _poseAnnotationPrefab;
 
+  // 샘플의 추론·주석 표시 컴포넌트를 현재 씬의 화면 참조와 연결한다.
   private void Awake()
   {
     ConfigureCanvasForSampleAnnotations();

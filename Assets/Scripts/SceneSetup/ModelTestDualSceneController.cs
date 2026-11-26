@@ -1,3 +1,6 @@
+// 모델 테스트 씬에서 보조 카메라의 추론기·아바타·출력 화면을 구성한다.
+// 실제 플레이 씬의 자동 병합 초기화는 PatternTestMergedPoseController가 별도로 담당한다.
+
 using Mediapipe.Unity.Sample.PoseLandmarkDetection;
 using UnityEngine;
 
@@ -19,6 +22,7 @@ public class ModelTestDualSceneController : MonoBehaviour
   private Camera _rightModelCamera;
   private RectTransform _rightRunnerPanel;
 
+  // 테스트 씬에 필요한 보조 입력과 화면 구성을 초기화한다.
   private void Start()
   {
     ResolveReferences();

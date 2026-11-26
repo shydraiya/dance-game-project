@@ -1,3 +1,6 @@
+// 다가오는 기준 자세를 미리 보여주는 마네킹 UI를 관리한다.
+// 패턴 자세를 모델에 적용하고 판정선까지 이동시키며 전용 카메라와 RenderTexture로 표시한다.
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -623,6 +626,7 @@ public class PosePreviewController : MonoBehaviour
         public Vector3 RestDirection;
         public Quaternion RestRotation;
     }
+    // PatternManager가 예고 시점에 호출하여 해당 기준 자세의 미리보기를 생성한다.
     public GameObject ShowPattern(PatternFrame patternFrame)
     {
         if (patternFrame == null)
