@@ -1,3 +1,6 @@
+// 게임 시간을 기준으로 패턴 미리보기와 판정 시점을 관리한다.
+// PatternLoader의 판정 대상 목록을 읽어 PosePreviewController에 예고하고 PoseNoteReader의 결과를 GameManager에 전달한다.
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -130,6 +133,7 @@ public class PatternManager : MonoBehaviour
         ProcessJudgeEvents(currentGameTime);
     }
 
+    // 판정 시각보다 lead time만큼 먼저 자세를 예고한다. 프레임이 늦어져도 도달한 항목을 순서대로 처리한다.
     private void ProcessPatternLoadEvents(float currentGameTime)
     {
         while (nextLoadIndex < patterns.Count)
@@ -150,6 +154,7 @@ public class PatternManager : MonoBehaviour
         }
     }
 
+    // 현재 시간이 기준 시각에 도달한 패턴을 한 번씩 판정한다. 렌더링 프레임 단위로 호출된다.
     private void ProcessJudgeEvents(float currentGameTime)
     {
         while (nextJudgeIndex < patterns.Count)

@@ -1,3 +1,6 @@
+// 한 곡의 점수·정확도·판정 횟수와 결과 등급을 화면에 표시한다.
+// GameManager의 결과를 받아 UI를 갱신하며 기록 파일 저장은 담당하지 않는다.
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,6 +42,7 @@ public class ResultUI : MonoBehaviour
     }
 
     /// GameManager의 현재 결과를 화면에 출력함
+    // GameManager의 최종 누적값을 읽어 결과 화면을 채운다.
     public void ShowResult()
     {
         if (GameManager.instance == null)

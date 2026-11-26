@@ -1,3 +1,6 @@
+// 플레이 시작 전에 사용자의 중앙 T포즈를 확인하는 준비 단계이다.
+// 일정 시간 자세를 유지하면 GameManager의 시작 카운트다운으로 넘긴다.
+
 using System;
 using System.Collections;
 using Mediapipe.Tasks.Components.Containers;
@@ -13,6 +16,7 @@ public sealed class InitialTPoseGateController : MonoBehaviour
     private const string PatternTestSceneName = "Pattern Test";
     private const int RequiredLandmarkCount = 29;
     private const float InitialGraceSeconds = 3.0f;
+    // 순간적으로 맞은 자세를 통과시키지 않도록 T포즈를 유지해야 하는 시간(초).
     private const float RequiredHoldSeconds = 0.6f;
     private const float SuccessDisplaySeconds = 0.5f;
 
@@ -163,6 +167,7 @@ public sealed class InitialTPoseGateController : MonoBehaviour
         _latestPoseMatches = IsCenteredTPose(poses[0].landmarks);
     }
 
+    // 화면 중심 위치와 팔의 펼침 상태를 확인하여 준비 자세인지 판별한다.
     private static bool IsCenteredTPose(System.Collections.Generic.IReadOnlyList<NormalizedLandmark> pose)
     {
         NormalizedLandmark leftShoulder = pose[11];

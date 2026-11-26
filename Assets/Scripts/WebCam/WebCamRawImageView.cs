@@ -1,3 +1,6 @@
+// 웹캠 영상을 RawImage에 표시하는 컴포넌트이다.
+// 영상 비율·좌우 반전·회전 정보를 화면에 반영하며 자세 추론 자체는 담당하지 않는다.
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -92,6 +95,7 @@ public class WebCamRawImageView : MonoBehaviour
     rectTransform.localEulerAngles = new Vector3(0, 0, -_webCamTexture.videoRotationAngle);
   }
 
+  // 씬 종료 시 카메라 재생과 텍스처를 해제하여 장치가 계속 점유되지 않게 한다.
   private void OnDestroy()
   {
     if (_webCamTexture != null)

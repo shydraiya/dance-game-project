@@ -1,3 +1,6 @@
+// 관절 방향과 몸통 기준축 정보가 포함된 CSV를 모델에 재생한다.
+// 팔다리 방향뿐 아니라 몸통·머리의 기준 좌표계 변화를 회전에 반영한다.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -288,6 +291,7 @@ public class CsvBodyFramePosePlayer : MonoBehaviour
         }
     }
 
+    // 프레임의 몸통 기준축을 보간하여 방향 벡터만으로 표현하기 어려운 몸통 회전을 적용한다.
     private void ApplyBodyFrameRotations(BodyFramePatternFrame a, BodyFramePatternFrame b, float blend, float smoothing)
     {
         if (_applyRootRotation && _rootRotationTransform != null && a.rootFrame.isValid && b.rootFrame.isValid)

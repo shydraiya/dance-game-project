@@ -1,3 +1,6 @@
+// T 키로 켜는 판정 비교 실험 도구이다.
+// 동일 패턴에 대한 웹캠 단독·병합 입력의 판정과 진단값을 persistentDataPath 아래 CSV로 기록한다.
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -90,6 +93,7 @@ public sealed class PoseComparisonTestingController : MonoBehaviour
         }
     }
 
+    // 실험별 파일을 만들고 두 입력의 판정·오차·제외 정보를 비교할 수 있는 CSV 헤더를 기록한다.
     private void StartRecording()
     {
         string directory = Path.Combine(Application.persistentDataPath, "TestingMode");

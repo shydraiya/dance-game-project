@@ -1,3 +1,6 @@
+// TextAsset CSV를 직접 읽어 기준 동작을 재생하는 독립 재생 컴포넌트이다.
+// 프레임 사이의 방향 벡터를 보간하여 Humanoid 뼈대에 적용한다.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -101,6 +104,7 @@ public class CsvPatternPosePlayer : MonoBehaviour
         Load(_csvFile);
     }
 
+    // CSV를 파싱하고 시간 순서로 정리하여 재생 기준과 탐색 상태를 초기화한다.
     public void Load(TextAsset csvFile)
     {
         _isLoaded = false;

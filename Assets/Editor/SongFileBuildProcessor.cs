@@ -1,3 +1,6 @@
+// 빌드가 끝나면 런타임에서 직접 읽을 음악·패턴 원본 파일을 플레이어 데이터 폴더에 복사한다.
+// Unity 에셋 포함만으로는 System.IO 경로 접근을 보장할 수 없어 별도 패키징을 수행한다.
+
 using System;
 using System.IO;
 using UnityEditor;
@@ -45,6 +48,7 @@ public sealed class SongFileBuildProcessor : IPostprocessBuildWithReport
         }
     }
 
+    // 하위 경로를 유지해 원본 파일을 복사하고 Unity 메타 파일과 임시 잠금 파일은 제외한다.
     private static int CopyFolder(string sourceRoot, string destinationRoot, string relativeFolder)
     {
         string source = Path.Combine(sourceRoot, relativeFolder);

@@ -1,3 +1,6 @@
+// CSV 패턴을 읽어 전체 동작 프레임과 실제 판정 대상 프레임을 구분한다.
+// 전체 프레임은 동작 재생에, is_pattern으로 지정된 프레임은 판정 시점 관리에 사용한다.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,6 +25,7 @@ public class PatternLoader : MonoBehaviour
 {
     [SerializeField] private string fileName = "pattern_sample.csv";
 
+    // 재생용 전체 프레임과 판정 대상으로 선택된 Patterns를 별도로 유지한다.
     public List<PatternFrame> Frames { get; private set; }   = new List<PatternFrame>();
     public List<PatternFrame> Patterns { get; private set; } = new List<PatternFrame>();
     public string FileName => fileName;
@@ -78,6 +82,7 @@ public class PatternLoader : MonoBehaviour
         return LoadPattern(fileName, out ignoredPatterns);
     }
 
+    // CSV를 읽어 전체 프레임을 반환하고, 판정 대상 행은 out 인자로 분리한다.
     public static List<PatternFrame> LoadPattern(string fileName, out List<PatternFrame> patterns)
     {
         List<PatternFrame> result = new List<PatternFrame>();

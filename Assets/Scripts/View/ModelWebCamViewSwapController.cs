@@ -1,3 +1,6 @@
+// 모델 화면과 웹캠 화면 중 어느 쪽을 크게 표시할지 전환한다.
+// 모델 보조 화면은 별도 카메라와 RenderTexture로 생성한다.
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,6 +79,7 @@ public class ModelWebCamViewSwapController : MonoBehaviour
     _modelPreviewCamera.transform.SetPositionAndRotation(_modelCamera.transform.position, _modelCamera.transform.rotation);
   }
 
+  // 동적으로 생성한 미리보기용 렌더 텍스처와 카메라를 정리한다.
   private void OnDestroy()
   {
     if (_modelPreviewTexture != null)

@@ -1,3 +1,6 @@
+// Unity 명령행에서 호출하는 Windows 64비트 빌드 진입점이다.
+// 활성화된 빌드 씬을 사용하고 Direct3D 11을 지정하며 실패 시 예외로 빌드 오류를 알린다.
+
 #if UNITY_EDITOR
 using System;
 using System.IO;
@@ -7,6 +10,7 @@ using UnityEngine.Rendering;
 
 public static class CommandLineBuild
 {
+    // Unity의 -executeMethod 인자로 호출한다. -buildOutput이 없으면 기본 출력 경로를 사용한다.
     public static void BuildWindows64()
     {
         string outputPath = GetArgumentValue("-buildOutput");

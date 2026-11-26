@@ -1,3 +1,6 @@
+// 곡 목록 TextAsset의 CSV를 읽어 SongData 목록으로 변환한다.
+// 따옴표로 묶인 필드와 구분자를 처리하여 곡 선택 UI에서 사용할 데이터를 만든다.
+
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -76,6 +79,7 @@ public static class SongDataLoader
     }
 
     // 제목이나 작곡가 이름에 쉼표가 포함되어도 읽을 수 있도록 처리
+    // 따옴표 내부 쉼표를 열 구분자로 오인하지 않도록 CSV 한 행을 분리한다.
     private static List<string> ParseCsvLine(string line)
     {
         List<string> result = new List<string>();

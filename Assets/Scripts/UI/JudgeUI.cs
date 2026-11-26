@@ -1,3 +1,6 @@
+// Perfect/Good/Bad/Miss 판정 이미지를 잠시 표시하는 UI이다.
+// 실제 판정 계산은 PoseNoteReader가 담당하며 이 컴포넌트는 시각적 피드백을 제공한다.
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,6 +45,7 @@ public class JudgeUI : MonoBehaviour
         judgeImage.enabled = false;
     }
 
+    // 새 판정의 표시를 시작한다. 계산 결과와 UI 연출을 분리하는 진입점이다.
     public void ShowJudge(JudgeRank status)
     {
         if (judgeRoutine != null)

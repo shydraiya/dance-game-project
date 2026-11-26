@@ -1,3 +1,6 @@
+// 정면 웹캠과 보조 카메라의 추정 자세를 정렬·병합하여 아바타를 움직인다.
+// 보조 자세의 유효기간과 관절 visibility를 확인하며, 병합 결과를 PoseNoteReader에도 제공한다.
+
 using System;
 using System.Collections.Generic;
 using Mediapipe.Tasks.Components.Containers;
@@ -16,6 +19,7 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   [SerializeField] private WebCamPoseLandmarkerRunner _droidCamRunner;
 
   [Header("Merge")]
+  // 유효한 보조 관절이 있을 때 정면 90%, 보조 10%를 기본 가중치로 사용한다.
   [SerializeField, Range(0.0f, 1.0f)] private float _webCamWeight = 0.9f;
   [SerializeField, Range(0.0f, 1.0f)] private float _droidCamWeight = 0.1f;
   [SerializeField, Range(0.0f, 1.0f)] private float _droidVisibilityThreshold = 0.5f;
@@ -46,6 +50,7 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
   private readonly float[] _droidVisibility = new float[LandmarkCount];
   private readonly float[] _mergedVisibility = new float[LandmarkCount];
   private readonly Dictionary<HumanBodyBones, DrivenBone> _bones = new Dictionary<HumanBodyBones, DrivenBone>();
+  // 두 추론 이벤트와 메인 스레드의 병합 처리가 공유하는 자세 버퍼를 보호한다.
   private readonly object _poseLock = new object();
 
   private bool _hasWebCamPose;
@@ -226,6 +231,7 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
     }
   }
 
+  // 판정은 LateUpdate보다 먼저 실행되므로 여기서도 병합값을 갱신한 뒤 복사한다.
   public bool TryCopyMergedPose(Vector3[] targetPose, float[] targetVisibility, out bool usedDroidPose)
   {
     usedDroidPose = false;
@@ -322,6 +328,7 @@ public class MergedHumanoidPoseDriver : MonoBehaviour
     }
   }
 
+  // 보조 자세의 최신성·몸통 정렬·관절 visibility를 확인한 뒤 가중 평균한다. 사용할 수 없으면 정면 값을 유지한다.
   private void MergeLatestPoses()
   {
     lock (_poseLock)

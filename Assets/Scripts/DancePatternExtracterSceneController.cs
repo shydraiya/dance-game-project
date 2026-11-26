@@ -1,3 +1,6 @@
+// 안무 애니메이션의 Humanoid 뼈대 방향을 CSV로 추출하고 다시 재생하는 제작 도구이다.
+// 게임에서 사용할 기준 동작 데이터를 만들며, 녹화와 CSV 재생 흐름을 함께 제어한다.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -191,6 +194,7 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     PlayDance((_selectedDanceIndex + 1) % _danceControllers.Length);
   }
 
+  // 현재 안무의 뼈대 정보를 일정 간격으로 수집하는 녹화를 시작한다.
   public void StartCsvRecording()
   {
     if (_isRecording)
@@ -341,6 +345,7 @@ public class DancePatternExtracterSceneController : MonoBehaviour
     _csvPlayback.ApplyFrame(frameIndex, 1.0f);
   }
 
+  // 샘플 시각을 관리하여 애니메이션의 자세를 시간 정보와 함께 CSV 기록기에 전달한다.
   private void UpdateRecording()
   {
     if (Time.time >= _nextSampleAt)

@@ -1,3 +1,6 @@
+// 카메라의 최신 자세와 CSV 기준 자세를 비교하는 판정 모듈이다.
+// 유효한 관절 방향의 평균 각도 오차로 등급을 정하며, 병합 자세가 사용 가능하면 판정 입력으로 우선 사용한다.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,7 +88,9 @@ public class PoseNoteReader : MonoBehaviour
   [SerializeField] private float _frameTime = 1.0f / 60.0f;
 
   [Header("Judgement")]
+  // 관절을 비교에 사용할 최소 visibility. 가려진 관절은 판정 방향 생성에서 제외한다.
   [SerializeField] private float _minimumVisibility = 0.35f;
+  // 등급 경계는 평균 방향 오차의 도 단위 값이며 실제 값은 Inspector 설정을 따른다.
   [SerializeField] private float _perfectAngle = 15.0f;
   [SerializeField] private float _goodAngle = 30.0f;
   [SerializeField] private float _badAngle = 45.0f;
@@ -117,6 +122,7 @@ public class PoseNoteReader : MonoBehaviour
   */
   //!!!!!!!!!!!!!여기까지!!!!!!!!!!!!!!!!!!!!!
 
+  // 비동기 추론 결과 갱신과 판정 측의 자세 읽기가 겹치지 않도록 보호한다.
   private readonly object _poseLock = new();
   private readonly Vector3[] _latestPose = new Vector3[LandmarkCount];
   private readonly float[] _latestVisibility = new float[LandmarkCount];
@@ -305,6 +311,7 @@ public class PoseNoteReader : MonoBehaviour
     return bestResult.score < 0.0f ? new JudgeResult { rank = JudgeRank.None, noteTime = -1.0f } : bestResult;
   }
 
+  // 비교 실험에서 입력 종류를 지정해 판정값과 제외 관절 정보를 수집한다.
   public JudgeDiagnostic EvaluatePatternForTesting(PatternFrame pattern, bool requestMerged)
   {
     var diagnostic = new JudgeDiagnostic
@@ -408,6 +415,7 @@ public class PoseNoteReader : MonoBehaviour
     }
   }
 
+  // 병합 입력을 우선 선택한다. 이미 좌표 변환된 병합 자세에는 같은 변환을 중복 적용하지 않는다.
   private bool TryBuildCurrentPoseAngles()
   {
     /*if (_boneRotationJudge != null && _boneRotationJudge.TryGetDirections(_boneDirections))
@@ -510,6 +518,7 @@ public class PoseNoteReader : MonoBehaviour
     }
   }
 
+  // 비교 가능한 방향들의 각도 오차를 평균내어 등급과 진단값을 만든다.
   private JudgeResult CompareWithPatternFrame(PatternFrame frame)
   {
     var totalAngle = 0.0f;
@@ -664,6 +673,7 @@ public class PoseNoteReader : MonoBehaviour
   }
 
   //PatternManager가 판
+  // PatternManager가 판정 시점에 호출하는 진입점. 지정된 한 패턴을 최신 자세와 비교한다.
   public JudgeResult EvaluatePattern(PatternFrame pattern)
   {
       _lastJudgeUsedMergedPose = false;

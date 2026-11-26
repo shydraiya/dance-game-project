@@ -1,3 +1,6 @@
+// 선택한 곡의 음악 파일을 비동기로 읽어 재생한다.
+// GameManager의 시작·일시정지·재개 흐름에 맞춰 AudioSource를 제어한다.
+
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
@@ -53,6 +56,7 @@ public class MusicController : MonoBehaviour
         StartCoroutine(LoadAndPlayRoutine(musicPath));
     }
 
+    // 파일 로딩을 기다리는 동안 메인 프레임을 막지 않고 준비된 AudioClip을 재생한다.
     private IEnumerator LoadAndPlayRoutine(string musicPath)
     {
         string fullPath = ResolveMusicPath(musicPath);

@@ -1,3 +1,6 @@
+// 게임 진행의 중심 제어기. 준비 완료 후 게임 시간을 진행하고 일시정지·재시도·종료를 처리한다.
+// PatternManager가 전달한 판정으로 점수와 정확도를 누적하고, 종료 시 결과를 저장한다.
+
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,7 +11,9 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     [Header("# Game Control")]
+    // 실제 플레이 진행 여부. 준비·일시정지·결과 화면에서는 게임 시간 진행을 막는다.
     public bool gamePlay;
+    // 패턴 예고와 판정이 참조하는 공통 게임 시간(초).
     public float gameTime;
     public float maxGameTime;
 
@@ -96,6 +101,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // T포즈 준비 완료 후 호출되며 중복 카운트다운 시작을 방지한다.
     public void BeginInitialCountdown()
     {
         if (initialCountdownStarted || gameFinished)
@@ -266,6 +272,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(songSelectionSceneName);
     }
 
+    // 현재 곡 ID와 이번 플레이 결과를 묶어 기록 저장소에 전달한다.
     private void SaveGameResult()
     {
         SongSessionController session = SongSessionController.Instance;

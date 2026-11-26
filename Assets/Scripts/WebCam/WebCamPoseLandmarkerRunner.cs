@@ -1,3 +1,6 @@
+// 별도 웹캠 입력을 열어 MediaPipe Pose Landmarker로 자세를 추론하고 결과 이벤트를 발행한다.
+// 보조 카메라도 일반 WebCamTexture로 읽으며, 현재 장치 선택은 이름의 부분 일치를 우선한다.
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -62,8 +65,10 @@ public class WebCamPoseLandmarkerRunner : MonoBehaviour
   private MultiPoseLandmarkListWithMaskAnnotation _annotation;
   private PoseLandmarkerResultAnnotationController _annotationController;
   private Coroutine _coroutine;
+  // 비동기 추론이 끝나기 전에 다음 요청을 중복 제출하지 않기 위한 상태값.
   private volatile bool _isLiveStreamRequestPending;
 
+  // 추론 결과를 아바타 구동과 자세 판정에 전달하는 연결 지점.
   public event Action<PoseLandmarkerResult> PoseLandmarksUpdated;
   public Texture CurrentTexture => _imageSource?.GetCurrentTexture();
   public string SourceName => _imageSource?.sourceName;
@@ -119,6 +124,7 @@ public class WebCamPoseLandmarkerRunner : MonoBehaviour
     _stopwatch.Stop();
   }
 
+  // 모델 준비 → 카메라 시작 → 영상 프레임 변환 → 추론 순서로 실행한다.
   private IEnumerator Run()
   {
     if (_webCamPanel == null || _annotatableScreenPrefab == null || _poseAnnotationPrefab == null)
@@ -446,6 +452,7 @@ public class WebCamPoseLandmarkerRunner : MonoBehaviour
       return _webCamTexture;
     }
 
+    // 이름 부분 일치를 우선하며 없으면 장치 목록으로 대체한다. 정면 입력과의 중복 선택은 여기서 검사하지 않는다.
     private string SelectDeviceName()
     {
       var devices = WebCamTexture.devices;

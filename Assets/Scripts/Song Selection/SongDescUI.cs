@@ -1,3 +1,5 @@
+// 현재 선택한 곡의 상세 정보를 UI 텍스트에 표시한다.
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +14,7 @@ public class SongDescUI : MonoBehaviour
     [SerializeField] private Text difficultyText;
     [SerializeField] private Text bestScoreText;
 
+    // 곡 선택이 바뀔 때 상세 표시 내용을 새 곡으로 교체한다.
     public void Bind(SongData song)
     {
         if (song == null)

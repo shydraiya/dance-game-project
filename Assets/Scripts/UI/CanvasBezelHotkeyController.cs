@@ -1,3 +1,5 @@
+// 테스트 화면의 패널 표시를 정리하고 숫자 키를 UI 버튼 호출에 연결한다.
+
 using System.Collections.Generic;
 using Mediapipe.Unity.Sample.UI;
 using UnityEngine;
@@ -101,6 +103,7 @@ public class CanvasBezelHotkeyController : MonoBehaviour
     }
   }
 
+  // 등록된 버튼을 숫자 키와 연결해 마우스 클릭과 같은 UI 동작을 실행한다.
   private void InvokeButton(int index)
   {
     if (!_invokeButtonOnKeyPress || index < 0 || index >= _buttons.Count)

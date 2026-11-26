@@ -1,3 +1,6 @@
+// 플레이 씬이 로드되면 저장된 아바타 선택에 맞춰 기준 동작 모델을 교체한다.
+// 모델 크기와 위치를 맞춘 뒤 PatternPosePlayer에 새 Animator를 연결한다.
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -33,6 +36,7 @@ public static class AvatarSelectionController
         }
     }
 
+    // 모델 교체 후 기준 동작 재생기가 새 뼈대를 사용하도록 Animator 참조를 갱신한다.
     private static bool ReplaceModel(PatternPosePlayer player, GameObject prefab)
     {
         Animator oldAnimator = player.TargetAnimator;

@@ -1,3 +1,6 @@
+// D 키로 정면·보조 카메라 영상을 확인하는 개발용 오버레이이다.
+// 기존 추론기의 영상을 우선 재사용하며, 추론기가 없으면 DroidCam을 직접 열어 표시한다.
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -129,6 +132,7 @@ public sealed class CameraDebugOverlayController : MonoBehaviour
             : $"DroidCam ({sourceName})";
     }
 
+    // 추론기가 이미 열어 둔 영상을 우선 재사용하고, 없을 때만 직접 카메라를 연다.
     private void ResolveDroidCamSource()
     {
         _droidCamRunner = FindAnyObjectByType<WebCamPoseLandmarkerRunner>();
